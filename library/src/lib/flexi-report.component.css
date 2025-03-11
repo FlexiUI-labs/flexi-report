@@ -1,28 +1,108 @@
-.flexi-report-a4{
+.flexi-report-cursor{
+    cursor: pointer;
+}
+
+.flexi-report-hover:hover{
+    background-color: #f1f1f1;
+}
+
+.flexi-report-p-1{
+    padding: 10px;
+}
+
+.flexi-report-a4 {
     width: 794px;
     height: 1123px;
 }
 
-.flexi-report-a5{
+.flexi-report-a5 {
     width: 559px;
     height: 794px;
 }
 
-.flexi-report-a6{
+.flexi-report-a6 {
     width: 397px;
     height: 559px;
 }
 
-.flexi-report-bold{
+.flexi-report-bold {
     font-weight: bold;
 }
 
-/* CDK Drag için görsel düzenlemeler */
 [cdkDrag] {
     position: relative;
     user-select: none;
-  }
+}
 
-  [cdkDrag]:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-  }
+[cdkDrag]:hover {
+    background-color: #f1f1f1;
+}
+
+.flexi-report-table{
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.flexi-report-table th, .flexi-report-table td{
+    border: 1px solid;
+    text-align: left;
+}
+
+.flex-report-setting-part{
+    position: fixed;
+    width: 380px;
+    border-right: 1px solid;
+    padding-left: 15px;
+    padding-right: 15px;
+    height: 100%;
+}
+
+.flex-report-content-part{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: 420px;
+}
+
+.flexi-report-setting-title{
+    font-size: xx-large;
+    text-align: center;
+}
+
+.flexi-report-setting-subtitle{
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    font-size: large;
+}
+
+.flexi-report-select{
+    width: 100%;
+    padding: 1px;
+}
+
+.flexi-report-ul{
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    margin: 0px;
+    height: 250px;
+    overflow: auto;
+}
+
+.flexi-report-ul li{
+    border: 1px solid;
+}
+
+.flexi-report-style-part{
+    display: none;
+    cursor: pointer;
+    position: absolute;
+    left: 440px;
+    top: 80px;
+    border: 1px solid black;
+    height: 60%;
+    padding: 10px;
+    z-index: 1;
+}
