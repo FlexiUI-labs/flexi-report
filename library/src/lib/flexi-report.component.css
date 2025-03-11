@@ -50,11 +50,15 @@
 
 .flex-report-setting-part{
     position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     width: 380px;
     border-right: 1px solid;
     padding-left: 15px;
     padding-right: 15px;
-    height: 100%;
+    height: 95%;
+    padding-bottom: 100px;
 }
 
 .flex-report-content-part{
@@ -87,7 +91,7 @@
     flex-direction: column;
     padding: 10px;
     margin: 0px;
-    height: 250px;
+    max-height: 400px;
     overflow: auto;
 }
 
@@ -96,13 +100,30 @@
 }
 
 .flexi-report-style-part{
-    display: none;
+    display: block;
     cursor: pointer;
     position: absolute;
     left: 440px;
     top: 80px;
     border: 1px solid black;
-    height: 60%;
+    background-color: #f1f1f1;
+    max-height: 60%;
     padding: 10px;
     z-index: 1;
+}
+
+.flexi-report-setting-button-part{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.flexi-report-setting-close-btn{
+    position: absolute;
+    top: 0px;
+    right: 10px;
+}
+
+.flexi-report-selected{
+    background-color: red !important;
 }

@@ -1,89 +1,99 @@
 <div style="position: relative;">
     <div class="flex-report-setting-part">
-        <p class="flexi-report-setting-title">Flexi Report</p>
-        <hr>
-        <div class="flexi-report-setting-subtitle">Page Settings</div>
-        <table class="flexi-report-table">
-            <tr>
-                <th>Sayfa Boyutu</th>
-                <td>
-                    <select class="flexi-report-select" [(ngModel)]="page.pageSize">
-                        <option value="a4">A4</option>
-                        <option value="a5">A5</option>
-                        <option value="a6">A6</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <th>Sayfa Durumu</th>
-                <td>
-                    <select class="flexi-report-select" [(ngModel)]="page.orientation">
-                        <option value="portrait">Dikey</option>
-                        <option value="landscape">Yatay</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-        <hr>
         <div>
-            <div class="flexi-report-setting-subtitle">Elements</div>
-            <ul class="flexi-report-ul">
-                @for(el of elements(); track el){
-                <li>
-                    <div class="flexi-report-cursor flexi-report-hover flexi-report-p-1" (click)="addElement(el)">{{el}}
-                    </div>
-                </li>
-                }
-            </ul>
-        </div>
-
-        <hr>
-        <button (click)="preview()">Preview</button>
-        <button (click)="clear()">Clear</button>
-        <button (click)="downloadAsPDF()">Download as PDF</button>
-    </div>
-    <div class="flexi-report-style-part" #stylePart cdkDrag>
-        <div>
-            <div class="flexi-report-setting-subtitle">
-                Style Settings
-                <button (click)="closeStylePart()">x</button>
-            </div>
-            <table>
+            <p class="flexi-report-setting-title">Flexi Report</p>
+            <hr>
+            <div class="flexi-report-setting-subtitle">{{ pageSettingsText() }}</div>
+            <table class="flexi-report-table">
                 <tr>
-                    <th>Text</th>
+                    <th>{{ pageSizeText() }}</th>
                     <td>
-                        <input [(ngModel)]="style.elementStyle().text" (keyup)="style.changeElementText()" />
+                        <select class="flexi-report-select" [(ngModel)]="page.pageSize">
+                            <option value="a4">A4</option>
+                            <option value="a5">A5</option>
+                            <option value="a6">A6</option>
+                        </select>
                     </td>
                 </tr>
+                <tr>
+                    <th>{{ pageOrientationText() }}</th>
+                    <td>
+                        <select class="flexi-report-select" [(ngModel)]="page.orientation">
+                            <option value="portrait">{{ landscapeText() }}</option>
+                            <option value="landscape">{{ portraitText() }}</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <hr>
+            <div>
+                <div class="flexi-report-setting-subtitle">{{ elementsText() }}</div>
+                <ul class="flexi-report-ul">
+                    @for(el of elements(); track el){
+                    <li>
+                        <div class="flexi-report-cursor flexi-report-hover flexi-report-p-1" (click)="addElement(el)">{{el}}
+                        </div>
+                    </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="flexi-report-setting-button-part">
+            <flexi-button btnColor="primary" [btnText]="previewText()" btnIcon="gallery_thumbnail" (click)="preview()" btnWidth="100%" />
+            <flexi-button btnColor="danger" [btnText]="clearText()" btnIcon="ink_eraser" (click)="clear()" btnWidth="100%" />
+            <flexi-button btnColor="success" [btnText]="DonwloadAsPDFText()" btnIcon="browser_updated" (click)="downloadAsPDF()" btnWidth="100%" />
+        </div>
+    </div>
+    <div class="flexi-report-style-part" #stylePart cdkDrag>
+        <div style="position: relative;">
+            <div class="flexi-report-setting-subtitle">
+                {{ styleSettingsText() }}
+                <div class="flexi-report-setting-close-btn">
+                    <flexi-button btnSize="x-small" btnColor="danger" btnIcon="close" title="Close" (click)="closeStylePart()" />
+                </div>
+            </div>
+            <table style="text-align: left; margin-bottom: 5px;">
+                @if(style.elementType() !== "TABLE"){
+                    <tr>
+                        <th>Text</th>
+                        <td>
+                            <input [(ngModel)]="style.elementStyle().text" (keyup)="style.changeElementText()" />
+                        </td>
+                    </tr>
+                }
                 <tr>
                     <th>Width</th>
                     <td>
                         <input type="text" [(ngModel)]="style.elementStyle().width" (keyup)="style.changeElementWith()">
                     </td>
                 </tr>
-                <tr>
-                    <th>Text Align</th>
-                    <td>
-                        <select (change)="style.changeElementTextAlign()" [(ngModel)]="style.elementStyle().textAlign">
-                            <option value="start">Left</option>
-                            <option value="center">Center</option>
-                            <option value="right">Right</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Border</th>
-                    <td>
-                        <input (keyup)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().border" />
-                    </td>
-                </tr>
+                @if(style.elementType() !== "TABLE"){
+                    <tr>
+                        <th>Text Align</th>
+                        <td>
+                            <select (change)="style.changeElementTextAlign()" [(ngModel)]="style.elementStyle().textAlign">
+                                <option value="start">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Border</th>
+                        <td>
+                            <input (keyup)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().border" />
+                        </td>
+                    </tr>
+                }
             </table>
 
+            <flexi-button btnColor="danger" btnSize="small" btnIcon="delete" [btnText]="deleteElementText()" (click)="deleteElement()" />
             @if(style.elementType() === "TABLE"){
             <hr>
             <div>
-                <div class="flexi-report-setting-subtitle">Table Settings</div>
-                <table>
+                <div class="flexi-report-setting-subtitle">{{ tableSettingsText() }}</div>
+                <table style="margin-bottom: 5px;">
                     <thead>
                         <tr>
                             <th>Value</th>
@@ -102,7 +112,7 @@
                             </th>
                             <th>
                                 <select [(ngModel)]="head.property" (change)="updateTableHeads()">
-                                    <option value="">No select</option>
+                                    <option value="">{{ noSelectText() }}</option>
                                     @for(val of properties(); track val){
                                     <option>{{val}}</option>
                                     }
@@ -112,7 +122,7 @@
                         }
                     </tbody>
                 </table>
-                <button (click)="addNewTableHead()">Yeni Başlık Ekle</button>
+                <flexi-button btnColor="primary" btnSize="small" btnIcon="add" [btnText]="addNewHeaderText()" (click)="addNewTableHead()" />
             </div>
             }
         </div>

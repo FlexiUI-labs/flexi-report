@@ -6,27 +6,44 @@ import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
 import { PageService } from './services/page.service';
 import { TableSettingModel } from './models/table-setting.model';
+import { FlexiButtonComponent } from 'flexi-button';
 
 @Component({
   selector: 'flexi-report',
   imports: [
     FormsModule,
     CommonModule,
-    DragDropModule
+    DragDropModule,
+    FlexiButtonComponent
   ],
   templateUrl: "flexi-report.component.html",
   styleUrl: `flexi-report.component.css`
 })
 export class FlexiReportComponent {
   readonly data = input<any[]>();
-
-  readonly tableHeads = signal<TableSettingModel[]>([]);
-  readonly elementBind = signal<string>("");
-  readonly properties = computed(() => this.getObjectProperties(this.data() ?? []));
+  readonly language = input<"en" | "tr">("en");
 
   readonly elements = signal<string[]>([
     "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "TABLE"
   ]);
+  readonly tableHeads = signal<TableSettingModel[]>([]);
+  readonly elementBind = signal<string>("");
+  readonly properties = computed(() => this.getObjectProperties(this.data() ?? []));
+
+  readonly pageSettingsText = computed(() => this.language() === "en" ? "Page Settings" : "Sayfa Ayarları");
+  readonly pageSizeText = computed(() => this.language() === "en" ? "Page Size" : "Sayfa Boyutu");
+  readonly pageOrientationText = computed(() => this.language() === "en" ? "Page Orientation" : "Sayfa Yönlendirme");
+  readonly landscapeText = computed(() => this.language() === "en" ? "Landscape" : "Yatay");
+  readonly portraitText = computed(() => this.language() === "en" ? "Portrait" : "Dikey");
+  readonly elementsText = computed(() => this.language() === "en" ? "Elements" : "Elementler");
+  readonly previewText = computed(() => this.language() === "en" ? "Preview" : "Önizleme");
+  readonly clearText = computed(() => this.language() === "en" ? "Clear" : "Temizle");
+  readonly DonwloadAsPDFText = computed(() => this.language() === "en" ? "Download as PDF" : "PDF olarak İndir");
+  readonly styleSettingsText = computed(() => this.language() === "en" ? "Style Settings" : "Style Ayarları");
+  readonly tableSettingsText = computed(() => this.language() === "en" ? "Table Settings" : "Table Ayarları");
+  readonly noSelectText = computed(() => this.language() === "en" ? "No select" : "Seçim yapılmadı");
+  readonly addNewHeaderText = computed(() => this.language() === "en" ? "Add new header" : "Yeni başlık ekle");
+  readonly deleteElementText = computed(() => this.language() === "en" ? "Delete element" : "Elementi sil");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -58,6 +75,8 @@ export class FlexiReportComponent {
     this.#renderer.appendChild(this.elementArea().nativeElement, newElement);
 
     this.#renderer.listen(newElement, 'click', () => {
+      this.clearAllSelectedClass();
+      newElement.classList.add("flexi-report-selected");
       this.style.selectedElement.set(newElement);
       this.stylePart().nativeElement.style.display = "block";
       this.style.elementStyle.set({
@@ -74,7 +93,7 @@ export class FlexiReportComponent {
     this.#dragDrop.createDrag(newElement);
   }
 
-  private createHeading(type: string): HTMLElement {
+  createHeading(type: string): HTMLElement {
     const heading = this.#renderer.createElement(type);
     const text = this.#renderer.createText("Title");
     this.#renderer.appendChild(heading, text);
@@ -83,7 +102,7 @@ export class FlexiReportComponent {
     return heading;
   }
 
-  private createSpan(): HTMLElement {
+  createSpan(): HTMLElement {
     const span = this.#renderer.createElement("span");
     const text = this.#renderer.createText("span");
     this.#renderer.appendChild(span, text);
@@ -92,7 +111,7 @@ export class FlexiReportComponent {
     return span;
   }
 
-  private createTable(): HTMLElement {
+  createTable(): HTMLElement {
     const table = this.#renderer.createElement("table");
     this.#renderer.setStyle(table, 'border', '1px solid black');
     this.#renderer.setStyle(table, 'border-collapse', 'collapse');
@@ -114,6 +133,14 @@ export class FlexiReportComponent {
     this.#renderer.appendChild(thead, headerRow);
 
     return table;
+  }
+
+  clearAllSelectedClass(){
+    const elements = this.pdfArea().nativeElement.querySelectorAll(".flexi-report-selected");
+    if(elements.length === 0) return;
+    elements.forEach((el:any) => {
+      el.classList.remove("flexi-report-selected")
+    });
   }
 
   downloadAsPDF() {
@@ -253,5 +280,12 @@ export class FlexiReportComponent {
 
   selectBindProperty() {
     this.#renderer.setAttribute(this.style.selectedElement(), "data-bind", this.elementBind());
+  }
+
+  deleteElement(){
+    if(this.style.selectedElement()){
+      this.style.selectedElement()!.remove();
+      this.closeStylePart();
+    }
   }
 }
