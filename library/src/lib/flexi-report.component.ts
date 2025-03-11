@@ -186,6 +186,8 @@ export class FlexiReportComponent implements AfterViewInit {
   downloadAsPDF() {
     if (!this.pdfArea()) return;
 
+    this.preview();
+
     const pageWidth = +this.page.pageSetting().width.replace("px", "");
     const pageHeight = +this.page.pageSetting().height.replace("px", "");
 
@@ -204,6 +206,10 @@ export class FlexiReportComponent implements AfterViewInit {
       width: pageWidth,
       windowWidth: pageWidth
     });
+
+    setTimeout(() => {
+      this.clear();
+    }, 500);
   }
 
   preview() {
