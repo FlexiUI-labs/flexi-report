@@ -83,7 +83,9 @@ export class FlexiReportComponent {
         text: newElement.innerText,
         width: newElement.style.width,
         textAlign: newElement.style.textAlign,
-        border: newElement.style.border
+        borderWidth: newElement.style.borderWidth ? newElement.style.borderWidth : undefined,
+        borderStyle: newElement.style.borderStyle ? newElement.style.borderStyle : undefined,
+        borderColor: newElement.style.borderColor ? newElement.style.borderColor : undefined,
       });
       if (type === "table") {
         this.getTableHeads(newElement);
@@ -98,7 +100,6 @@ export class FlexiReportComponent {
     const text = this.#renderer.createText("Title");
     this.#renderer.appendChild(heading, text);
     this.#renderer.setStyle(heading, 'width', 'min-content');
-    this.#renderer.setStyle(heading, 'border', '1px solid black');
     return heading;
   }
 
@@ -106,7 +107,6 @@ export class FlexiReportComponent {
     const span = this.#renderer.createElement("span");
     const text = this.#renderer.createText("span");
     this.#renderer.appendChild(span, text);
-    this.#renderer.setStyle(span, 'border', '1px solid black');
     this.#renderer.setStyle(span, 'display', 'inline-block');
     return span;
   }

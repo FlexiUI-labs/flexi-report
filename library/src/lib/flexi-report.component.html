@@ -80,15 +80,29 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Border</th>
+                        <th>Border Width</th>
                         <td>
-                            <input (keyup)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().border" />
+                            <input (keyup)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderWidth" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Border Type</th>
+                        <td>
+                            <input (keyup)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderStyle" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Border Color</th>
+                        <td>
+                            <input type="color" (keyup)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderColor" />
                         </td>
                     </tr>
                 }
             </table>
 
-            <flexi-button btnColor="danger" btnSize="small" btnIcon="delete" [btnText]="deleteElementText()" (click)="deleteElement()" />
+            <div style="text-align: center;">
+                <flexi-button btnColor="danger" btnSize="small" btnIcon="delete" [btnText]="deleteElementText()" (click)="deleteElement()" />
+            </div>
             @if(style.elementType() === "TABLE"){
             <hr>
             <div>

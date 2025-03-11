@@ -100,7 +100,7 @@
 }
 
 .flexi-report-style-part{
-    display: block;
+    display: none;
     cursor: pointer;
     position: absolute;
     left: 440px;
@@ -125,5 +125,7 @@
 }
 
 .flexi-report-selected{
-    background-color: red !important;
+    border-width: 1px;
+    border-style: dashed;
+    border-color: black;
 }

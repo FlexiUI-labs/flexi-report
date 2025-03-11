@@ -18,10 +18,20 @@ export class StyleService {
   }
 
   changeElementTextAlign() {
-    this.selectedElement()!.style.textAlign = this.elementStyle().textAlign;
+    this.selectedElement()!.style.textAlign = this.elementStyle().textAlign!;
   }
 
   changeElementBorder() {
-    this.selectedElement()!.style.border = this.elementStyle().border;
+    if(this.elementStyle().borderWidth){
+      this.selectedElement()!.style.borderWidth = this.elementStyle().borderWidth!;
+    }
+
+    if(this.elementStyle().borderStyle){
+      this.selectedElement()!.style.borderStyle = this.elementStyle().borderStyle!;
+    }
+
+    if(this.elementStyle().borderColor){
+      this.selectedElement()!.style.borderColor = this.elementStyle().borderColor!;
+    }
   }
 }
