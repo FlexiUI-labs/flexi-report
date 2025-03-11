@@ -124,8 +124,20 @@
     right: 10px;
 }
 
-.flexi-report-selected{
-    border-width: 1px;
-    border-style: dashed;
-    border-color: black;
+.flexi-report-input{
+    width: 150px;
+}
+
+.flexi-report-selected {
+    outline: 2px dashed blue;
+}
+
+.flexi-report-resize-handle {
+    width: 10px;
+    height: 10px;
+    background: gray;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    cursor: se-resize;
 }

@@ -34,4 +34,46 @@ export class StyleService {
       this.selectedElement()!.style.borderColor = this.elementStyle().borderColor!;
     }
   }
+
+  changeElementFontSize() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.fontSize = this.elementStyle().fontSize!;
+    }
+  }
+
+  changeElementFontFamily() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.fontFamily = this.elementStyle().fontFamily!;
+    }
+  }
+
+  changeElementTextColor() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.color = this.elementStyle().color!;
+    }
+  }
+
+  changeElementBackgroundColor() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.backgroundColor = this.elementStyle().backgroundColor!;
+    }
+  }
+
+  changeElementPadding() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.padding = this.elementStyle().padding!;
+    }
+  }
+
+  changeElementMargin() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.margin = this.elementStyle().margin!;
+    }
+  }
+
+  changeElementBorderRadius() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.borderRadius = this.elementStyle().borderRadius!;
+    }
+  }
 }

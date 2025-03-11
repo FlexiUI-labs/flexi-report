@@ -5,6 +5,13 @@ export interface ElementStyleModel {
     borderWidth?: string;
     borderColor?: string;
     borderStyle?: string;
+    fontSize?: string;
+    fontFamily?: string;
+    color?: string;
+    backgroundColor?: string;
+    padding?: string;
+    margin?: string;
+    borderRadius?: string;
   }
 
   export const initializeElementStyle: ElementStyleModel = {

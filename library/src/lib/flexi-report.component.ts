@@ -1,6 +1,6 @@
 import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, input, Renderer2, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, inject, input, Renderer2, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
@@ -19,12 +19,12 @@ import { FlexiButtonComponent } from 'flexi-button';
   templateUrl: "flexi-report.component.html",
   styleUrl: `flexi-report.component.css`
 })
-export class FlexiReportComponent {
+export class FlexiReportComponent implements AfterViewInit {
   readonly data = input<any[]>();
   readonly language = input<"en" | "tr">("en");
 
   readonly elements = signal<string[]>([
-    "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "TABLE"
+    "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "TABLE"
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
@@ -44,6 +44,7 @@ export class FlexiReportComponent {
   readonly noSelectText = computed(() => this.language() === "en" ? "No select" : "Seçim yapılmadı");
   readonly addNewHeaderText = computed(() => this.language() === "en" ? "Add new header" : "Yeni başlık ekle");
   readonly deleteElementText = computed(() => this.language() === "en" ? "Delete element" : "Elementi sil");
+  readonly deleteText = computed(() => this.language() === "en" ? "Delete" : "Sil");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -53,6 +54,45 @@ export class FlexiReportComponent {
   readonly #dragDrop = inject(DragDrop);
   readonly style = inject(StyleService);
   readonly page = inject(PageService);
+
+  ngAfterViewInit() {
+    this.#renderer.listen(this.pdfArea().nativeElement, 'click', (event: MouseEvent) => {
+      // Eğer tıklanan element 'draggable' sınıfına sahip değilse seçimi temizle
+      if (!(event.target as HTMLElement).closest('.draggable')) {
+        this.clearAllSelectedClass();
+        this.style.selectedElement.set(null);
+        this.stylePart().nativeElement.style.display = "none";
+      }
+    });
+  }
+
+  private attachClickListener(newElement: HTMLElement, type: string) {
+    this.#renderer.listen(newElement, 'click', () => {
+      this.clearAllSelectedClass();
+      this.#renderer.addClass(newElement, 'flexi-report-selected');
+      this.makeResizable(newElement);
+      this.style.selectedElement.set(newElement);
+      this.stylePart().nativeElement.style.display = "block";
+      this.style.elementStyle.set({
+        text: newElement.innerText,
+        width: newElement.style.width,
+        textAlign: newElement.style.textAlign ? newElement.style.textAlign : "start",
+        borderWidth: newElement.style.borderWidth ? newElement.style.borderWidth : undefined,
+        borderStyle: newElement.style.borderStyle ? newElement.style.borderStyle : undefined,
+        borderColor: newElement.style.borderColor ? newElement.style.borderColor : undefined,
+        fontSize: newElement.style.fontSize ? newElement.style.fontSize : "16px",
+        fontFamily: newElement.style.fontFamily ? newElement.style.fontFamily : "Arial",
+        color: newElement.style.color ? newElement.style.color : "#000000",
+        backgroundColor: newElement.style.backgroundColor ? newElement.style.backgroundColor : "#ffffff",
+        padding: newElement.style.padding ? newElement.style.padding : "10px",
+        margin: newElement.style.margin ? newElement.style.margin : "0px",
+        borderRadius: newElement.style.borderRadius ? newElement.style.borderRadius : "0px"
+      });
+      if (type === "table") {
+        this.getTableHeads(newElement);
+      }
+    });
+  }
 
   addElement(type: string) {
     if (!this.elementArea()) return;
@@ -64,33 +104,21 @@ export class FlexiReportComponent {
       newElement = this.createHeading(type);
     } else if (type === "span") {
       newElement = this.createSpan();
+    } else if (type === "p") {
+      newElement = this.createParagraph();
     } else if (type === "table") {
       newElement = this.createTable();
     }
 
     if (!newElement) return;
 
+    newElement.classList.add("draggable");
+    newElement.setAttribute('data-type', type);
+    this.attachClickListener(newElement, type);
+
     this.#renderer.setStyle(newElement, 'cursor', 'move');
     this.#renderer.setStyle(newElement, 'padding', '10px');
     this.#renderer.appendChild(this.elementArea().nativeElement, newElement);
-
-    this.#renderer.listen(newElement, 'click', () => {
-      this.clearAllSelectedClass();
-      newElement.classList.add("flexi-report-selected");
-      this.style.selectedElement.set(newElement);
-      this.stylePart().nativeElement.style.display = "block";
-      this.style.elementStyle.set({
-        text: newElement.innerText,
-        width: newElement.style.width,
-        textAlign: newElement.style.textAlign,
-        borderWidth: newElement.style.borderWidth ? newElement.style.borderWidth : undefined,
-        borderStyle: newElement.style.borderStyle ? newElement.style.borderStyle : undefined,
-        borderColor: newElement.style.borderColor ? newElement.style.borderColor : undefined,
-      });
-      if (type === "table") {
-        this.getTableHeads(newElement);
-      }
-    });
 
     this.#dragDrop.createDrag(newElement);
   }
@@ -106,6 +134,14 @@ export class FlexiReportComponent {
   createSpan(): HTMLElement {
     const span = this.#renderer.createElement("span");
     const text = this.#renderer.createText("span");
+    this.#renderer.appendChild(span, text);
+    this.#renderer.setStyle(span, 'display', 'inline-block');
+    return span;
+  }
+
+  createParagraph(): HTMLElement{
+    const span = this.#renderer.createElement("p");
+    const text = this.#renderer.createText("paragraph");
     this.#renderer.appendChild(span, text);
     this.#renderer.setStyle(span, 'display', 'inline-block');
     return span;
@@ -135,11 +171,15 @@ export class FlexiReportComponent {
     return table;
   }
 
-  clearAllSelectedClass(){
+  clearAllSelectedClass() {
     const elements = this.pdfArea().nativeElement.querySelectorAll(".flexi-report-selected");
-    if(elements.length === 0) return;
-    elements.forEach((el:any) => {
-      el.classList.remove("flexi-report-selected")
+    if (elements.length === 0) return;
+    elements.forEach((el: any) => {
+      el.classList.remove("flexi-report-selected");
+      const handle = el.querySelector('.flexi-report-resize-handle');
+      if (handle) {
+        this.#renderer.removeChild(el, handle);
+      }
     });
   }
 
@@ -243,6 +283,11 @@ export class FlexiReportComponent {
     this.tableHeads.set(headers);
   }
 
+  deleteTableHead(index:number){
+    this.tableHeads().splice(index,1);
+    this.updateTableHeads();
+  }
+
   updateTableHeads() {
     if (!this.style.selectedElement() || this.style.selectedElement()?.tagName !== "TABLE") return;
 
@@ -278,14 +323,79 @@ export class FlexiReportComponent {
     this.updateTableHeads();
   }
 
-  selectBindProperty() {
-    this.#renderer.setAttribute(this.style.selectedElement(), "data-bind", this.elementBind());
-  }
-
-  deleteElement(){
-    if(this.style.selectedElement()){
+  deleteElement() {
+    if (this.style.selectedElement()) {
       this.style.selectedElement()!.remove();
       this.closeStylePart();
     }
+  }
+
+  saveReport() {
+    if (!this.pdfArea()) return;
+    const reportContent = this.elementArea().nativeElement.innerHTML;
+    const report = {
+      name: 'New Report',
+      content: reportContent,
+      createdAt: new Date()
+    };
+
+    let savedReports = JSON.parse(localStorage.getItem('savedReports') || '[]');
+    savedReports.push(report);
+    localStorage.setItem('savedReports', JSON.stringify(savedReports));
+  }
+
+  loadReports() {
+    const reports = JSON.parse(localStorage.getItem('savedReports') || '[]');
+    console.log(reports);
+    if (reports.length > 0) this.loadReport(reports[0]);
+    return reports;
+  }
+
+  loadReport(report: any) {
+    if (!this.pdfArea()) return;
+    this.elementArea().nativeElement.innerHTML = report.content;
+
+    this.restoreDragFeature();
+  }
+
+  restoreDragFeature() {
+    if (!this.elementArea()) return;
+    const draggableElements = this.elementArea().nativeElement.querySelectorAll(".draggable");
+    draggableElements.forEach((el: HTMLElement) => {
+      this.#dragDrop.createDrag(el);
+      const type = el.getAttribute('data-type') || el.tagName.toLowerCase();
+      this.attachClickListener(el, type);
+    });
+  }
+
+  private makeResizable(newElement: HTMLElement) {
+    // Resize handle öğesi oluşturuluyor
+    const resizeHandle = this.#renderer.createElement('div');
+    this.#renderer.addClass(resizeHandle, 'flexi-report-resize-handle');
+    this.#renderer.appendChild(newElement, resizeHandle);
+
+    let startX: number, startY: number, startWidth: number, startHeight: number;
+
+    const mouseMoveHandler = (event: MouseEvent) => {
+      const newWidth = startWidth + (event.clientX - startX);
+      const newHeight = startHeight + (event.clientY - startY);
+      this.#renderer.setStyle(newElement, 'width', `${newWidth}px`);
+      this.#renderer.setStyle(newElement, 'height', `${newHeight}px`);
+    };
+
+    const mouseUpHandler = () => {
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', mouseUpHandler);
+    };
+
+    resizeHandle.addEventListener('mousedown', (event: MouseEvent) => {
+      event.stopPropagation();
+      startX = event.clientX;
+      startY = event.clientY;
+      startWidth = newElement.offsetWidth;
+      startHeight = newElement.offsetHeight;
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+    });
   }
 }
