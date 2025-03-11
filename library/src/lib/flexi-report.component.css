@@ -1,0 +1,28 @@
+.flexi-report-a4{
+    width: 794px;
+    height: 1123px;
+}
+
+.flexi-report-a5{
+    width: 559px;
+    height: 794px;
+}
+
+.flexi-report-a6{
+    width: 397px;
+    height: 559px;
+}
+
+.flexi-report-bold{
+    font-weight: bold;
+}
+
+/* CDK Drag için görsel düzenlemeler */
+[cdkDrag] {
+    position: relative;
+    user-select: none;
+  }
+
+  [cdkDrag]:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
