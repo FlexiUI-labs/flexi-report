@@ -70,7 +70,7 @@ export class FlexiReportComponent implements AfterViewInit {
     this.#renderer.listen(newElement, 'click', () => {
       this.clearAllSelectedClass();
       this.#renderer.addClass(newElement, 'flexi-report-selected');
-      this.makeResizable(newElement);
+      //this.makeResizable(newElement);
       this.style.selectedElement.set(newElement);
       this.stylePart().nativeElement.style.display = "block";
       this.style.elementStyle.set({
@@ -176,10 +176,10 @@ export class FlexiReportComponent implements AfterViewInit {
     if (elements.length === 0) return;
     elements.forEach((el: any) => {
       el.classList.remove("flexi-report-selected");
-      const handle = el.querySelector('.flexi-report-resize-handle');
-      if (handle) {
-        this.#renderer.removeChild(el, handle);
-      }
+      // const handle = el.querySelector('.flexi-report-resize-handle');
+      // if (handle) {
+      //   this.#renderer.removeChild(el, handle);
+      // }
     });
   }
 
@@ -257,6 +257,7 @@ export class FlexiReportComponent implements AfterViewInit {
   closeStylePart() {
     const el: any = document.querySelector(".flexi-report-style-part");
     el.style.display = "none";
+    this.clearAllSelectedClass();
   }
 
   getObjectProperties(data: any[]): string[] {

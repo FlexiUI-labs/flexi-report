@@ -65,6 +65,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: start;
     margin-left: 420px;
 }
 
@@ -107,7 +108,6 @@
     top: 80px;
     border: 1px solid black;
     background-color: #f1f1f1;
-    max-height: 60%;
     padding: 10px;
     z-index: 1;
 }
