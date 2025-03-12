@@ -41,12 +41,35 @@ export class FlexiReportComponent implements OnChanges {
   readonly fontFamilies = signal<string[]>([
     "Arial",
     "Times New Roman",
-    "Roboto",
-    "Open Sans",
-    "Lato",
     "Oswald",
     "IBM Plex Sans"
-  ])
+  ]);
+  readonly textDecorations = signal<string[]>([
+    "none",
+    "underline",
+    "dashed",
+    "dotted",
+    "double",
+    "line-through",
+    "overline",
+    "solid",
+    "wavy"
+  ]);
+  readonly borderStles = signal<string[]>([
+    "unset",
+    "dashed",
+    "dotted",
+    "double",
+    "groove",
+    "hidden",
+    "inherit",
+    "initial",
+    "inset",
+    "none",
+    "outset",
+    "ridge",
+    "solid"
+  ]);
 
   readonly pageSettingsText = computed(() => this.language() === "en" ? "Page Settings" : "Sayfa Ayarları");
   readonly pageSizeText = computed(() => this.language() === "en" ? "Page Size" : "Sayfa Boyutu");
@@ -58,7 +81,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly clearText = computed(() => this.language() === "en" ? "Clear" : "Temizle");
   readonly DonwloadAsPDFText = computed(() => this.language() === "en" ? "Download as PDF" : "PDF olarak İndir");
   readonly styleSettingsText = computed(() => this.language() === "en" ? "Style Settings" : "Style Ayarları");
-  readonly tableSettingsText = computed(() => this.language() === "en" ? "Table Settings" : "Table Ayarları");
+  readonly tableHeadersSettingsText = computed(() => this.language() === "en" ? "Table Headers Settings" : "Table Başlık Ayarları");
   readonly noSelectText = computed(() => this.language() === "en" ? "No select" : "Seçim yapılmadı");
   readonly addNewHeaderText = computed(() => this.language() === "en" ? "Add new header" : "Yeni başlık ekle");
   readonly deleteElementText = computed(() => this.language() === "en" ? "Delete element" : "Elementi sil");
@@ -85,10 +108,10 @@ export class FlexiReportComponent implements OnChanges {
   readonly page = inject(PageService);
 
   ngOnChanges(changes: SimpleChanges): void {
-    if(this.reportSignal()){
+    if (this.reportSignal()) {
       this.loadReport();
 
-      if(!this.isPreview()) this.restoreDragFeature();
+      if (!this.isPreview()) this.restoreDragFeature();
       else this.preview();
     }
   }
@@ -103,17 +126,19 @@ export class FlexiReportComponent implements OnChanges {
       this.style.elementStyle.set({
         text: newElement.innerText,
         width: newElement.style.width,
-        textAlign: newElement.style.textAlign ? newElement.style.textAlign : "start",
-        borderWidth: newElement.style.borderWidth ? newElement.style.borderWidth : undefined,
-        borderStyle: newElement.style.borderStyle ? newElement.style.borderStyle : undefined,
-        borderColor: newElement.style.borderColor ? newElement.style.borderColor : undefined,
-        fontSize: newElement.style.fontSize ? newElement.style.fontSize : "16px",
-        fontFamily: newElement.style.fontFamily ? newElement.style.fontFamily : "Arial",
-        color: newElement.style.color ? newElement.style.color : "#000000",
-        backgroundColor: newElement.style.backgroundColor ? newElement.style.backgroundColor : "#ffffff",
-        padding: newElement.style.padding ? newElement.style.padding : "10px",
-        margin: newElement.style.margin ? newElement.style.margin : "0px",
-        borderRadius: newElement.style.borderRadius ? newElement.style.borderRadius : "0px"
+        textAlign: newElement.style.textAlign || "start",
+        borderWidth: newElement.style.borderWidth || "0px",
+        borderStyle: newElement.style.borderStyle || "unset",
+        borderColor: this.rgbStringToHex(newElement.style.borderColor),
+        fontSize: newElement.style.fontSize || "16px",
+        fontFamily: newElement.style.fontFamily || "IBM Plex Sans",
+        color: this.rgbStringToHex(newElement.style.color),
+        backgroundColor: newElement.style.backgroundColor === "" ? "#ffffff" : this.rgbStringToHex(newElement.style.backgroundColor),
+        padding: newElement.style.padding || "0px",
+        margin: newElement.style.margin || "0px",
+        borderRadius: newElement.style.borderRadius || "0px",
+        fontWeight: newElement.style.fontWeight || "normal",
+        textDecoration: newElement.style.textDecoration || "none"
       });
       if (type === "table") {
         this.getTableHeads(newElement);
@@ -187,6 +212,7 @@ export class FlexiReportComponent implements OnChanges {
 
     const thead = this.#renderer.createElement("thead");
     const tbody = this.#renderer.createElement("tbody");
+
     this.#renderer.appendChild(table, thead);
     this.#renderer.appendChild(table, tbody);
 
@@ -268,7 +294,8 @@ export class FlexiReportComponent implements OnChanges {
 
       const headers = Array.from(table.querySelectorAll("th")).map(th => ({
         property: th.getAttribute("data-bind") || "",
-        width: th.style.width || "auto"
+        width: th.style.width || "auto",
+        textAlign: th.style.textAlign || "start"
       }));
 
       this.data()!.forEach((res, i) => {
@@ -277,13 +304,15 @@ export class FlexiReportComponent implements OnChanges {
 
         headers.forEach(header => {
           const cell = this.#renderer.createElement("td");
+          cell.style.borderWidth = "1px";
+          cell.style.borderStyle = "solid";
+          cell.style.borderColor = "black";
+          cell.style.textAlign = header.textAlign;
           const value = header.property ? (header.property === "index" ? i + 1 : res[header.property] || "") : "";
           this.#renderer.appendChild(cell, this.#renderer.createText(value));
           //this.#renderer.setStyle(cell, "padding", "5px");
           this.#renderer.appendChild(row, cell);
         });
-
-        debugger
         this.#renderer.appendChild(tbody, row);
       });
     });
@@ -319,7 +348,8 @@ export class FlexiReportComponent implements OnChanges {
       headers.push({
         value: th.innerText.trim(),
         width: th.style.width || "auto",
-        property: th.getAttribute("data-bind") || ""
+        property: th.getAttribute("data-bind") || "",
+        textAlign: th.style.textAlign || "start"
       });
     });
 
@@ -354,6 +384,7 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.setStyle(th, 'border-style', 'solid');
       this.#renderer.setStyle(th, 'border-color', 'black');
       this.#renderer.setStyle(th, 'width', head.width);
+      this.#renderer.setStyle(th, 'text-align', head.textAlign);
       if (head.property) {
         this.#renderer.setAttribute(th, "data-bind", head.property);
       }
@@ -387,7 +418,7 @@ export class FlexiReportComponent implements OnChanges {
     this.closeStylePart();
     this.clear();
     setTimeout(() => {
-     this.onSave.emit(this.reportSignal());
+      this.onSave.emit(this.reportSignal());
     }, 300);
   }
 
@@ -435,5 +466,13 @@ export class FlexiReportComponent implements OnChanges {
       document.addEventListener('mousemove', mouseMoveHandler);
       document.addEventListener('mouseup', mouseUpHandler);
     });
+  }
+
+  rgbStringToHex(rgb: string): string {
+    const match = rgb.match(/\d+/g);
+    if (!match || match.length !== 3) return "#000000"; // Geçersiz giriş için varsayılan değer
+
+    const [r, g, b] = match.map(Number);
+    return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
   }
 }

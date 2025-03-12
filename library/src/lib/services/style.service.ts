@@ -57,6 +57,12 @@ export class StyleService {
     }
   }
 
+  changeElementTextDecoration(){
+    if(this.selectedElement()){
+      this.selectedElement()!.style.textDecoration = this.elementStyle().textDecoration!;
+    }
+  }
+
   changeElementTextColor() {
     if(this.selectedElement()){
       this.selectedElement()!.style.color = this.elementStyle().color!;

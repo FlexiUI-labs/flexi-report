@@ -13,10 +13,12 @@ export interface ElementStyleModel {
     margin?: string;
     borderRadius?: string;
     fontWeight?: string;
+    textDecoration?: string;
   }
 
   export const initializeElementStyle: ElementStyleModel = {
     text: "",
     width: "100%",
-    textAlign: "start"
+    textAlign: "start",
+    fontFamily: "IBM Plex Sans"
   }
