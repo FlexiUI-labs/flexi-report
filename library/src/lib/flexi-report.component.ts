@@ -1,12 +1,15 @@
 import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, ElementRef, EventEmitter, inject, input, Output, Renderer2, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, EventEmitter, inject, input, linkedSignal, OnChanges, output, Output, Renderer2, signal, SimpleChanges, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
 import { PageService } from './services/page.service';
 import { TableSettingModel } from './models/table-setting.model';
 import { FlexiButtonComponent } from 'flexi-button';
+import { ReportModel } from './models/report.model';
+import { RouterLink } from '@angular/router';
+import { FlexiTooltipDirective } from 'flexi-tooltip';
 
 @Component({
   selector: 'flexi-report',
@@ -14,14 +17,19 @@ import { FlexiButtonComponent } from 'flexi-button';
     FormsModule,
     CommonModule,
     DragDropModule,
-    FlexiButtonComponent
+    FlexiButtonComponent,
+    FlexiTooltipDirective,
+    RouterLink
   ],
   templateUrl: "flexi-report.component.html",
   styleUrl: `flexi-report.component.css`
 })
-export class FlexiReportComponent {
+export class FlexiReportComponent implements OnChanges {
   readonly data = input<any[]>();
   readonly language = input<"en" | "tr">("en");
+  readonly report = input<ReportModel>();
+  readonly editPath = input<string>();
+  readonly isPreview = input<boolean>(false);
 
   readonly elements = signal<string[]>([
     "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "TABLE"
@@ -29,7 +37,7 @@ export class FlexiReportComponent {
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
   readonly endpoint = signal<string>("https://jsonplaceholder.typicode.com/todos");
-  readonly reportTitle = signal<string>("New Report");
+  readonly reportTitle = linkedSignal(() => this.report()?.name ? this.report()!.name : "New Report");
   readonly properties = computed(() => this.getObjectProperties(this.data() ?? []));
 
   readonly pageSettingsText = computed(() => this.language() === "en" ? "Page Settings" : "Sayfa Ayarları");
@@ -51,15 +59,30 @@ export class FlexiReportComponent {
   readonly endpointText = computed(() => this.language() === "en" ? "Endpoint" : "Endpoint");
   readonly reportTitleText = computed(() => this.language() === "en" ? "Report Title" : "Rapor Başlığı");
   readonly saveText = computed(() => this.language() === "en" ? "Save" : "Kaydet");
+  readonly editText = computed(() => this.language() === "en" ? "Edit" : "Güncelle");
+  readonly newReportText = computed(() => this.language() === "en" ? "New Report" : "Yeni Rapor");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
   readonly stylePart = viewChild.required<ElementRef>("stylePart");
 
+  readonly onSave = output<any>();
+  readonly onNewReport = output<void>();
+  readonly onDelete = output<any>();
+
   readonly #renderer = inject(Renderer2);
   readonly #dragDrop = inject(DragDrop);
   readonly style = inject(StyleService);
   readonly page = inject(PageService);
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(this.report()){
+      this.loadReport();
+
+      if(!this.isPreview()) this.restoreDragFeature();
+      else this.preview();
+    }
+  }
 
   private attachClickListener(newElement: HTMLElement, type: string) {
     this.#renderer.listen(newElement, 'click', () => {
@@ -352,29 +375,15 @@ export class FlexiReportComponent {
       createdAt: new Date()
     };
 
-    let savedReports = JSON.parse(localStorage.getItem('savedReports') || '[]');
-    const index = savedReports.findIndex((item: any) => item.name === this.reportTitle());
-
-    if (index !== -1) {
-      savedReports[index] = report;
-    } else {
-      savedReports.unshift(report);
-    }
-    localStorage.setItem('savedReports', JSON.stringify(savedReports));
+    this.clearAllSelectedClass();
+    this.closeStylePart();
+    this.onSave.emit(report);
   }
 
-  loadReports() {
-    const reports = JSON.parse(localStorage.getItem('savedReports') || '[]');
-    console.log(reports);
-    if (reports.length > 0) this.loadReport(reports[0]);
-    return reports;
-  }
-
-  loadReport(report: any) {
-    if (!this.pdfArea()) return;
-    this.elementArea().nativeElement.innerHTML = report.content;
-
-    this.restoreDragFeature();
+  loadReport() {
+    if (!this.pdfArea() || !this.report()) return;
+    this.elementArea().nativeElement.innerHTML = this.report()!.content;
+    this.clearAllSelectedClass();
   }
 
   restoreDragFeature() {

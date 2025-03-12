@@ -3,61 +3,71 @@
         <div style="overflow: auto; padding: 0px 15px; margin-bottom: 30px;">
             <div>
                 <p class="flexi-report-setting-title">Flexi Report</p>
-                <hr>
-                <div class="flexi-report-setting-subtitle">{{ propertiesText() }}</div>
-                <div>
-                    <strong>{{ endpointText() }}</strong>
-                    <input style="width: 100%;" type="text" [(ngModel)]="endpoint">
-                </div>
-                <div style="margin-top: 5px;">
-                    <strong>{{ reportTitleText() }}</strong>
-                    <input style="width: 100%;" type="text" [(ngModel)]="reportTitle">
-                </div>
-                <div style="margin-top: 5px;">
-                    <flexi-button btnColor="info" [btnText]="saveText()" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
-                </div>
-                <hr>
-                <div class="flexi-report-setting-subtitle">{{ pageSettingsText() }}</div>
-                <table class="flexi-report-table">
-                    <tr>
-                        <th>{{ pageSizeText() }}</th>
-                        <td>
-                            <select class="flexi-report-select" [(ngModel)]="page.pageSize">
-                                <option value="a4">A4</option>
-                                <option value="a5">A5</option>
-                                <option value="a6">A6</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>{{ pageOrientationText() }}</th>
-                        <td>
-                            <select class="flexi-report-select" [(ngModel)]="page.orientation">
-                                <option value="portrait">{{ landscapeText() }}</option>
-                                <option value="landscape">{{ portraitText() }}</option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-                <hr>
-                <div>
-                    <div class="flexi-report-setting-subtitle">{{ elementsText() }}</div>
-                    <ul class="flexi-report-ul">
-                        @for(el of elements(); track el){
-                        <li>
-                            <div class="flexi-report-cursor flexi-report-hover flexi-report-p-1" (click)="addElement(el)">{{el}}
-                            </div>
-                        </li>
-                        }
-                    </ul>
-                </div>
+                @if(!isPreview()){
+                    <hr>
+                    <div class="flexi-report-setting-subtitle">{{ propertiesText() }}</div>
+                    <div>
+                        <strong>{{ endpointText() }}</strong>
+                        <input style="width: 100%;" type="text" [(ngModel)]="endpoint">
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <strong>{{ reportTitleText() }}</strong>
+                        <input style="width: 100%;" type="text" [(ngModel)]="reportTitle">
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <flexi-button btnColor="info" [btnText]="saveText()" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
+                    </div>
+                    <hr>
+                    <div class="flexi-report-setting-subtitle">{{ pageSettingsText() }}</div>
+                    <table class="flexi-report-table">
+                        <tr>
+                            <th>{{ pageSizeText() }}</th>
+                            <td>
+                                <select class="flexi-report-select" [(ngModel)]="page.pageSize">
+                                    <option value="a4">A4</option>
+                                    <option value="a5">A5</option>
+                                    <option value="a6">A6</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{ pageOrientationText() }}</th>
+                            <td>
+                                <select class="flexi-report-select" [(ngModel)]="page.orientation">
+                                    <option value="portrait">{{ landscapeText() }}</option>
+                                    <option value="landscape">{{ portraitText() }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <hr>
+                    <div>
+                        <div class="flexi-report-setting-subtitle">{{ elementsText() }}</div>
+                        <ul class="flexi-report-ul">
+                            @for(el of elements(); track el){
+                            <li>
+                                <div class="flexi-report-cursor flexi-report-hover flexi-report-p-1" (click)="addElement(el)">
+                                    {{el}}
+                                </div>
+                            </li>
+                            }
+                        </ul>
+                    </div>
+                }
             </div>
 
             <div class="flexi-report-setting-button-part">
-                <!-- <flexi-button btnColor="warning" [btnText]="'Yükle'" btnIcon="upload" (click)="loadReports()" btnWidth="100%" /> -->
-                <flexi-button btnColor="primary" [btnText]="previewText()" btnIcon="gallery_thumbnail" (click)="preview()" btnWidth="100%" />
-                <flexi-button btnColor="danger" [btnText]="clearText()" btnIcon="ink_eraser" (click)="clear()" btnWidth="100%" />
-                <flexi-button btnColor="success" [btnText]="DonwloadAsPDFText()" btnIcon="browser_updated" (click)="downloadAsPDF()" btnWidth="100%" />
+                @if(isPreview()){
+                    <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
+                }@else if(!isPreview() && report()?.id){
+                    <flexi-button btnColor="info" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
+                }
+                <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
+                <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
+                @if(!isPreview() && report()?.id){
+                    <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(report()!.id)" />
+                }
+                <flexi-button btnColor="success" [title]="DonwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
             </div>
         </div>
     </div>

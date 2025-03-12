@@ -89,7 +89,8 @@
     flex-direction: column;
     padding: 10px;
     margin: 0px;
-    max-height: 400px;
+    max-height: 300px;
+    margin-bottom: 20px;
     overflow: auto;
 }
 
@@ -111,7 +112,7 @@
 
 .flexi-report-setting-button-part{
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     gap: 5px;
 }
 

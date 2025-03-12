@@ -2,27 +2,24 @@ import { AfterViewInit, Component, computed, inject, resource, viewChild } from 
 import { FlexiReportComponent } from '../../library/src/lib/flexi-report.component';
 import { lastValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { FlexiButtonComponent } from 'flexi-button';
+import { ReportService } from './report.service';
 
 @Component({
   selector: 'app-root',
-  imports: [FlexiReportComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  imports: [RouterOutlet, RouterLink, FlexiButtonComponent],
+  template: `
+  <div style="display: flex; gap:5px">
+    <flexi-button btnColor="primary" btnText="Report Page" routerLink="/report/edit" btnIcon="lab_profile" />
+    @for(val of reports(); track val.id){
+      <flexi-button btnColor="primary" [btnText]="val.name" routerLink="/report/preview/{{val.id}}" btnIcon="gallery_thumbnail" />
+    }
+  </div>
+  <router-outlet />
+  `
 })
 export class AppComponent {
-  readonly result = resource({
-    request: () => this.report()?.endpoint(),
-    loader: async ({request}) => {
-      if(!request) return;
-      console.log(request);
-
-      var res = await lastValueFrom(this.http.get<any[]>(request));
-      return res;
-    }
-  })
-  readonly data = computed(() => this.result.value() ?? []);
-
-  readonly report = viewChild(FlexiReportComponent);
-
-  readonly http = inject(HttpClient);
+  readonly reports = computed(() => this.report.reports());
+  readonly report = inject(ReportService);
 }
