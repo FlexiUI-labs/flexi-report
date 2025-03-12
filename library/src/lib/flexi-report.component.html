@@ -268,6 +268,12 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>Format</th>
+                                <td>
+                                    <input class="flexi-report-input" [(ngModel)]="head.format" (input)="updateTableHeads()" />
+                                </td>
+                            </tr>
+                            <tr>
                                 <th>#</th>
                                 <td>
                                     <flexi-button btnColor="danger" btnSize="x-small" btnIcon="delete" [title]="deleteText()" (click)="deleteTableHead($index)"/>
@@ -286,11 +292,20 @@
         </div>
     </div>
     <div class="flex-report-content-part">
-        <h1>Report Page</h1>
-        <div style="border: 1px solid; position: relative; overflow: auto;" [style.width]="pageSetting().width"
-            [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
-            <div #pdfArea>
-                <div #elementArea></div>
+        <div style="display: flex; gap: 10px; align-items: center; width: 75%;">
+            <span class="flexi-report-setting-title">Report Page</span>
+            <div style="display: flex; gap: 5px; justify-content: start;">
+                <flexi-button btnColor="light" btnSize="small" btnIcon="remove" (click)="zoomOut()" />
+                <input [value]="'%' + (zoomValue() * 100).toFixed(0)" style="width: 70px; text-align: center;"/>
+                <flexi-button btnColor="light" btnSize="small" btnIcon="add" (click)="zoomIn()" />
+            </div>
+        </div>
+        <div [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">
+            <div style="border: 1px solid; position: relative; overflow: auto; width: 100%;" [style.width]="pageSetting().width"
+                [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
+                  <div #pdfArea>
+                    <div #elementArea></div>
+                  </div>
             </div>
         </div>
     </div>

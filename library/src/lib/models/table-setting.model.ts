@@ -6,4 +6,5 @@ export interface TableSettingModel {
   borderStyle?: string;
   borderColor?: string;
   textAlign?: string;
+  format?: string;
 }

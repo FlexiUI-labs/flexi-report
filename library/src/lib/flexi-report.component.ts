@@ -9,7 +9,6 @@ import { FlexiButtonComponent } from 'flexi-button';
 import { ReportModel } from './models/report.model';
 import { RouterLink } from '@angular/router';
 import { FlexiTooltipDirective } from 'flexi-tooltip';
-import { initializePageSetting } from './models/page-setting.model';
 
 @Component({
   selector: 'flexi-report',
@@ -31,6 +30,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly editPath = input<string>();
   readonly isPreview = input<boolean>(false);
 
+  readonly zoomValue = signal<number>(0.6);
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<string[]>([
@@ -307,6 +307,7 @@ export class FlexiReportComponent implements OnChanges {
 
       const headers = Array.from(table.querySelectorAll("th")).map(th => ({
         property: th.getAttribute("data-bind") || "",
+        format: th.getAttribute("data-format") || "",
         width: th.style.width || "auto",
         textAlign: th.style.textAlign || "start",
         borderWidth: th.style.borderWidth || "1px",
@@ -324,7 +325,10 @@ export class FlexiReportComponent implements OnChanges {
           cell.style.borderStyle = header.borderStyle;
           cell.style.borderColor = header.borderColor;
           cell.style.textAlign = header.textAlign;
-          const value = header.property ? (header.property === "index" ? i + 1 : this.getNestedValue(res, header.property) || "") : "";
+          let value = header.property ? (header.property === "index" ? i + 1 : this.getNestedValue(res, header.property) || "") : "";
+          if (header.format) {
+            value = this.formatValue(value, header.format);
+          }
           this.#renderer.appendChild(cell, this.#renderer.createText(value));
           //this.#renderer.setStyle(cell, "padding", "5px");
           this.#renderer.appendChild(row, cell);
@@ -336,6 +340,39 @@ export class FlexiReportComponent implements OnChanges {
 
   getNestedValue(obj: any, path: string, defaultValue: any = ""): any {
     return path.split('.').reduce((acc, key) => acc && acc[key] !== undefined ? acc[key] : defaultValue, obj);
+  }
+
+  formatValue(value: string | number, format: string): string {
+    // Parasal format kontrolü: format "c" ya da "C" ile başlıyorsa
+    if (format.toLowerCase().startsWith('c')) {
+      const num = typeof value === 'number' ? value : parseFloat(value);
+      if (isNaN(num)) return String(value);
+      // Format string içerisindeki sayıyı alır (örneğin "c2" => 2 ondalık basamak)
+      const decimals = parseInt(format.substring(1), 10) || 2;
+      const region = this.language() === "tr" ? "tr-TR" : "en-US";
+      return num.toLocaleString(region, {
+        style: 'decimal',
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      if (format === 'dd MMM yyyy') {
+        // Gün, ay (kısaltma) ve yılı alıyoruz.
+        const day = date.getDate().toString().padStart(2, '0');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = monthNames[date.getMonth()];
+        const year = date.getFullYear();
+        return `${day} ${month} ${year}`;
+      }
+      // İstenilen başka tarih formatlarını da buraya ekleyebilirsiniz.
+      return date.toLocaleDateString();
+    }
+
+    // Hiçbir format uygulanamazsa, değeri string'e çevirerek döndürür.
+    return String(value);
   }
 
   clear() {
@@ -427,6 +464,9 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.setStyle(th, 'text-align', head.textAlign);
       if (head.property) {
         this.#renderer.setAttribute(th, "data-bind", head.property);
+      }
+      if (head.format) {
+        this.#renderer.setAttribute(th, "data-format", head.format);
       }
       this.#renderer.appendChild(headerRow, th);
     });
@@ -553,6 +593,16 @@ export class FlexiReportComponent implements OnChanges {
           height: "397px"
         });
       }
+    }
+  }
+
+  zoomIn() {
+    this.zoomValue.update(prev => prev += 0.1);
+  }
+  
+  zoomOut() {
+    if (this.zoomValue() > 0.2) {
+      this.zoomValue.update(prev => prev -= 0.1);
     }
   }
 }
