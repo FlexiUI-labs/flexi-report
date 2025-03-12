@@ -1,7 +1,7 @@
 export class ReportModel{
-    id: string = "";
+    id: string | null = null;
     content: string = "";
-    createdAt: string = "";
-    name: string = "";
-    endpoint: string = "";
+    createdAt: string = new Date().toString();
+    name: string = "New Report";
+    endpoint: string = "https://jsonplaceholder.typicode.com/todos";
 }

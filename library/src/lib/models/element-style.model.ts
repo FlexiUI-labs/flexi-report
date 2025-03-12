@@ -12,6 +12,7 @@ export interface ElementStyleModel {
     padding?: string;
     margin?: string;
     borderRadius?: string;
+    fontWeight?: string;
   }
 
   export const initializeElementStyle: ElementStyleModel = {

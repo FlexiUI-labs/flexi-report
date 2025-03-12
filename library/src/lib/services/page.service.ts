@@ -7,6 +7,7 @@ import { initializePageSetting } from '../models/page-setting.model';
 export class PageService {
   readonly pageSize = signal<"a4" | "a5" | "a6">("a4");
   readonly orientation = signal<"landscape" | "portrait">("portrait");
+  readonly fontFamily = signal<string>("");
   readonly pageSetting = computed(() => {
     if (this.orientation() === "portrait") {
       if (this.pageSize() === "a4") {

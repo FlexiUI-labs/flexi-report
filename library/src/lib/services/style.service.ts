@@ -51,6 +51,12 @@ export class StyleService {
     }
   }
 
+  changeElementFontWeight() {
+    if(this.selectedElement()){
+      this.selectedElement()!.style.fontWeight = this.elementStyle().fontWeight!;
+    }
+  }
+
   changeElementTextColor() {
     if(this.selectedElement()){
       this.selectedElement()!.style.color = this.elementStyle().color!;

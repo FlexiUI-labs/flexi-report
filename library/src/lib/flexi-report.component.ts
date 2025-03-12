@@ -31,14 +31,22 @@ export class FlexiReportComponent implements OnChanges {
   readonly editPath = input<string>();
   readonly isPreview = input<boolean>(false);
 
+  readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<string[]>([
     "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "HR", "TABLE"
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
-  readonly endpoint = signal<string>("https://jsonplaceholder.typicode.com/todos");
-  readonly reportTitle = linkedSignal(() => this.report()?.name ? this.report()!.name : "New Report");
   readonly properties = computed(() => this.getObjectProperties(this.data() ?? []));
+  readonly fontFamilies = signal<string[]>([
+    "Arial",
+    "Times New Roman",
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Oswald",
+    "IBM Plex Sans"
+  ])
 
   readonly pageSettingsText = computed(() => this.language() === "en" ? "Page Settings" : "Sayfa Ayarları");
   readonly pageSizeText = computed(() => this.language() === "en" ? "Page Size" : "Sayfa Boyutu");
@@ -61,6 +69,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly saveText = computed(() => this.language() === "en" ? "Save" : "Kaydet");
   readonly editText = computed(() => this.language() === "en" ? "Edit" : "Güncelle");
   readonly newReportText = computed(() => this.language() === "en" ? "New Report" : "Yeni Rapor");
+  readonly pageFontFamilyText = computed(() => this.language() === "en" ? "Font Family" : "Font Family");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -76,7 +85,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly page = inject(PageService);
 
   ngOnChanges(changes: SimpleChanges): void {
-    if(this.report()){
+    if(this.reportSignal()){
       this.loadReport();
 
       if(!this.isPreview()) this.restoreDragFeature();
@@ -369,24 +378,22 @@ export class FlexiReportComponent implements OnChanges {
   saveReport() {
     if (!this.pdfArea()) return;
     const reportContent = this.elementArea().nativeElement.innerHTML;
-    const report = {
-      name: this.reportTitle(),
-      endpoint: this.endpoint(),
-      content: reportContent,
-      createdAt: new Date()
-    };
+    this.reportSignal.update(prev => ({
+      ...prev,
+      content: reportContent
+    }));
 
     this.clearAllSelectedClass();
     this.closeStylePart();
     this.clear();
     setTimeout(() => {
-      this.onSave.emit(report);
+     this.onSave.emit(this.reportSignal());
     }, 300);
   }
 
   loadReport() {
-    if (!this.pdfArea() || !this.report()) return;
-    this.elementArea().nativeElement.innerHTML = this.report()!.content;
+    if (!this.pdfArea() || !this.reportSignal()) return;
+    this.elementArea().nativeElement.innerHTML = this.reportSignal()!.content;
     this.clearAllSelectedClass();
   }
 

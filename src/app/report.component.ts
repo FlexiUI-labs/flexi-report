@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, resource, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, resource, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { FlexiReportComponent } from '../../library/src/public-api';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
@@ -42,7 +42,7 @@ export class ReportComponent {
     }
   });
 
-  readonly report = computed(() => this.reportResult.value() ?? new ReportModel());
+  readonly report = linkedSignal(() => this.reportResult.value() ?? new ReportModel());
   readonly reportLoading = computed(() => this.reportResult.isLoading());
 
   readonly result = resource({
@@ -67,7 +67,8 @@ export class ReportComponent {
 
   onSave(report:any){
     this.http.post("https://localhost:7032",report).subscribe((res:any) => {
-      this.id.set(res.id)
+      report.id = res.id;
+      this.report.set(report);
       this.#report.reportResult.reload();
     });
   }
