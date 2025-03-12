@@ -264,8 +264,12 @@ export class FlexiReportComponent implements OnChanges {
       format: [pageWidth, pageHeight]
     });
 
-    pdf.addFont("https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf", "Roboto", "normal");
-    pdf.setFont("Roboto");
+    let ttfLink = "https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf";
+    let fontName = "Roboto";
+
+    pdf.addFont(ttfLink, fontName, "normal");
+    pdf.setFont(fontName);
+
     pdf.html(this.pdfArea().nativeElement, {
       callback: (doc) => {
         doc.save('report.pdf');
@@ -276,9 +280,9 @@ export class FlexiReportComponent implements OnChanges {
       windowWidth: pageWidth
     });
 
-    setTimeout(() => {
-      this.clear();
-    }, 500);
+    // setTimeout(() => {
+    //   this.clear();
+    // }, 500);
   }
 
   preview() {
