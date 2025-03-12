@@ -1,6 +1,6 @@
 import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, ElementRef, inject, input, Renderer2, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, computed, ElementRef, EventEmitter, inject, input, Output, Renderer2, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
@@ -19,7 +19,7 @@ import { FlexiButtonComponent } from 'flexi-button';
   templateUrl: "flexi-report.component.html",
   styleUrl: `flexi-report.component.css`
 })
-export class FlexiReportComponent implements AfterViewInit {
+export class FlexiReportComponent {
   readonly data = input<any[]>();
   readonly language = input<"en" | "tr">("en");
 
@@ -28,6 +28,8 @@ export class FlexiReportComponent implements AfterViewInit {
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
+  readonly endpoint = signal<string>("https://jsonplaceholder.typicode.com/todos");
+  readonly reportTitle = signal<string>("New Report");
   readonly properties = computed(() => this.getObjectProperties(this.data() ?? []));
 
   readonly pageSettingsText = computed(() => this.language() === "en" ? "Page Settings" : "Sayfa Ayarları");
@@ -45,6 +47,10 @@ export class FlexiReportComponent implements AfterViewInit {
   readonly addNewHeaderText = computed(() => this.language() === "en" ? "Add new header" : "Yeni başlık ekle");
   readonly deleteElementText = computed(() => this.language() === "en" ? "Delete element" : "Elementi sil");
   readonly deleteText = computed(() => this.language() === "en" ? "Delete" : "Sil");
+  readonly propertiesText = computed(() => this.language() === "en" ? "Properties" : "Properties");
+  readonly endpointText = computed(() => this.language() === "en" ? "Endpoint" : "Endpoint");
+  readonly reportTitleText = computed(() => this.language() === "en" ? "Report Title" : "Rapor Başlığı");
+  readonly saveText = computed(() => this.language() === "en" ? "Save" : "Kaydet");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -54,17 +60,6 @@ export class FlexiReportComponent implements AfterViewInit {
   readonly #dragDrop = inject(DragDrop);
   readonly style = inject(StyleService);
   readonly page = inject(PageService);
-
-  ngAfterViewInit() {
-    this.#renderer.listen(this.pdfArea().nativeElement, 'click', (event: MouseEvent) => {
-      // Eğer tıklanan element 'draggable' sınıfına sahip değilse seçimi temizle
-      if (!(event.target as HTMLElement).closest('.draggable')) {
-        this.clearAllSelectedClass();
-        this.style.selectedElement.set(null);
-        this.stylePart().nativeElement.style.display = "none";
-      }
-    });
-  }
 
   private attachClickListener(newElement: HTMLElement, type: string) {
     this.#renderer.listen(newElement, 'click', () => {
@@ -127,7 +122,7 @@ export class FlexiReportComponent implements AfterViewInit {
     const heading = this.#renderer.createElement(type);
     const text = this.#renderer.createText("Title");
     this.#renderer.appendChild(heading, text);
-    this.#renderer.setStyle(heading, 'width', 'min-content');
+    this.#renderer.setStyle(heading, 'width', 'fit-content');
     return heading;
   }
 
@@ -139,7 +134,7 @@ export class FlexiReportComponent implements AfterViewInit {
     return span;
   }
 
-  createParagraph(): HTMLElement{
+  createParagraph(): HTMLElement {
     const span = this.#renderer.createElement("p");
     const text = this.#renderer.createText("paragraph");
     this.#renderer.appendChild(span, text);
@@ -149,9 +144,8 @@ export class FlexiReportComponent implements AfterViewInit {
 
   createTable(): HTMLElement {
     const table = this.#renderer.createElement("table");
-    this.#renderer.setStyle(table, 'border', '1px solid black');
     this.#renderer.setStyle(table, 'border-collapse', 'collapse');
-    this.#renderer.setStyle(table, 'width', '100%');
+    this.#renderer.setStyle(table, 'width', '90%');
 
     const thead = this.#renderer.createElement("thead");
     const tbody = this.#renderer.createElement("tbody");
@@ -162,7 +156,9 @@ export class FlexiReportComponent implements AfterViewInit {
     for (let i = 0; i < 3; i++) {
       const th = this.#renderer.createElement("th");
       this.#renderer.appendChild(th, this.#renderer.createText(`Header ${i + 1}`));
-      this.#renderer.setStyle(th, 'border', '1px solid black');
+      this.#renderer.setStyle(th, 'border-width', '1px');
+      this.#renderer.setStyle(th, 'border-style', 'solid');
+      this.#renderer.setStyle(th, 'border-color', 'black');
       this.#renderer.setStyle(th, 'padding', '5px');
       this.#renderer.appendChild(headerRow, th);
     }
@@ -207,9 +203,9 @@ export class FlexiReportComponent implements AfterViewInit {
       windowWidth: pageWidth
     });
 
-    setTimeout(() => {
-      this.clear();
-    }, 500);
+    // setTimeout(() => {
+    //   this.clear();
+    // }, 500);
   }
 
   preview() {
@@ -237,15 +233,14 @@ export class FlexiReportComponent implements AfterViewInit {
         width: th.style.width || "auto"
       }));
 
-      this.data()!.forEach(res => {
+      this.data()!.forEach((res, i) => {
         const row = this.#renderer.createElement("tr");
         row.classList.add("remove-after");
 
         headers.forEach(header => {
           const cell = this.#renderer.createElement("td");
-          const value = header.property ? res[header.property] || "" : "";
+          const value = header.property ? (header.property === "index" ? i + 1 : res[header.property] || "") : "";
           this.#renderer.appendChild(cell, this.#renderer.createText(value));
-          this.#renderer.setStyle(cell, "border", "1px solid black");
           this.#renderer.setStyle(cell, "padding", "5px");
           this.#renderer.appendChild(row, cell);
         });
@@ -267,7 +262,9 @@ export class FlexiReportComponent implements AfterViewInit {
   }
 
   getObjectProperties(data: any[]): string[] {
-    return data.length > 0 ? Object.keys(data[0]) : [];
+    const properties = data.length > 0 ? Object.keys(data[0]) : [];
+    properties.unshift("index");
+    return properties;
   }
 
   getTableHeads(element: HTMLElement) {
@@ -290,8 +287,8 @@ export class FlexiReportComponent implements AfterViewInit {
     this.tableHeads.set(headers);
   }
 
-  deleteTableHead(index:number){
-    this.tableHeads().splice(index,1);
+  deleteTableHead(index: number) {
+    this.tableHeads().splice(index, 1);
     this.updateTableHeads();
   }
 
@@ -313,8 +310,16 @@ export class FlexiReportComponent implements AfterViewInit {
     this.tableHeads().forEach(head => {
       const th = this.#renderer.createElement("th");
       this.#renderer.appendChild(th, this.#renderer.createText(head.value));
-      this.#renderer.setStyle(th, 'border', '1px solid black');
       this.#renderer.setStyle(th, 'padding', '5px');
+      if (head.borderWidth) {
+        this.#renderer.setStyle(th, 'border-width', "1px")
+      }
+      if (head.borderStyle) {
+        this.#renderer.setStyle(th, 'border-style', "solid")
+      }
+      if (head.borderColor) {
+        this.#renderer.setStyle(th, 'border-color', "black")
+      }
       this.#renderer.setStyle(th, 'width', head.width);
       if (head.property) {
         this.#renderer.setAttribute(th, "data-bind", head.property);
@@ -341,13 +346,20 @@ export class FlexiReportComponent implements AfterViewInit {
     if (!this.pdfArea()) return;
     const reportContent = this.elementArea().nativeElement.innerHTML;
     const report = {
-      name: 'New Report',
+      name: this.reportTitle(),
+      endpoint: this.endpoint(),
       content: reportContent,
       createdAt: new Date()
     };
 
     let savedReports = JSON.parse(localStorage.getItem('savedReports') || '[]');
-    savedReports.push(report);
+    const index = savedReports.findIndex((item: any) => item.name === this.reportTitle());
+
+    if (index !== -1) {
+      savedReports[index] = report;
+    } else {
+      savedReports.unshift(report);
+    }
     localStorage.setItem('savedReports', JSON.stringify(savedReports));
   }
 
@@ -375,8 +387,7 @@ export class FlexiReportComponent implements AfterViewInit {
     });
   }
 
-  private makeResizable(newElement: HTMLElement) {
-    // Resize handle öğesi oluşturuluyor
+  makeResizable(newElement: HTMLElement) {
     const resizeHandle = this.#renderer.createElement('div');
     this.#renderer.addClass(resizeHandle, 'flexi-report-resize-handle');
     this.#renderer.appendChild(newElement, resizeHandle);

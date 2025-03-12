@@ -55,10 +55,7 @@
     justify-content: space-between;
     width: 380px;
     border-right: 1px solid;
-    padding-left: 15px;
-    padding-right: 15px;
-    height: 95%;
-    padding-bottom: 100px;
+    height: 99%;
 }
 
 .flex-report-content-part{
@@ -104,11 +101,11 @@
     display: none;
     cursor: pointer;
     position: absolute;
-    left: 440px;
+    left: 430px;
     top: 80px;
     border: 1px solid black;
     background-color: #f1f1f1;
-    padding: 10px;
+    padding: 10px 15px;
     z-index: 1;
 }
 

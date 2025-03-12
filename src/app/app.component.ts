@@ -1,4 +1,4 @@
-import { Component, computed, inject, resource } from '@angular/core';
+import { AfterViewInit, Component, computed, inject, resource, viewChild } from '@angular/core';
 import { FlexiReportComponent } from '../../library/src/lib/flexi-report.component';
 import { lastValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
@@ -11,13 +11,18 @@ import { HttpClient } from '@angular/common/http';
 })
 export class AppComponent {
   readonly result = resource({
-    loader: async () => {
-      var res = await lastValueFrom(this.http.get<any[]>("https://jsonplaceholder.typicode.com/todos"));
+    request: () => this.report()?.endpoint(),
+    loader: async ({request}) => {
+      if(!request) return;
+      console.log(request);
+
+      var res = await lastValueFrom(this.http.get<any[]>(request));
       return res;
     }
   })
   readonly data = computed(() => this.result.value() ?? []);
 
-  readonly http = inject(HttpClient);
+  readonly report = viewChild(FlexiReportComponent);
 
+  readonly http = inject(HttpClient);
 }

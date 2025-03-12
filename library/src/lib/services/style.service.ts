@@ -33,6 +33,10 @@ export class StyleService {
     if(this.elementStyle().borderColor){
       this.selectedElement()!.style.borderColor = this.elementStyle().borderColor!;
     }
+
+    if(this.elementStyle().borderRadius){
+      this.selectedElement()!.style.borderRadius = this.elementStyle().borderRadius!;
+    }
   }
 
   changeElementFontSize() {
@@ -68,12 +72,6 @@ export class StyleService {
   changeElementMargin() {
     if(this.selectedElement()){
       this.selectedElement()!.style.margin = this.elementStyle().margin!;
-    }
-  }
-
-  changeElementBorderRadius() {
-    if(this.selectedElement()){
-      this.selectedElement()!.style.borderRadius = this.elementStyle().borderRadius!;
     }
   }
 }
