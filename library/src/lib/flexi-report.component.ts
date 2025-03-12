@@ -1,15 +1,15 @@
 import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, computed, ElementRef, EventEmitter, inject, input, linkedSignal, OnChanges, output, Output, Renderer2, signal, SimpleChanges, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
-import { PageService } from './services/page.service';
 import { TableSettingModel } from './models/table-setting.model';
 import { FlexiButtonComponent } from 'flexi-button';
 import { ReportModel } from './models/report.model';
 import { RouterLink } from '@angular/router';
 import { FlexiTooltipDirective } from 'flexi-tooltip';
+import { initializePageSetting } from './models/page-setting.model';
 
 @Component({
   selector: 'flexi-report',
@@ -31,6 +31,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly editPath = input<string>();
   readonly isPreview = input<boolean>(false);
 
+  readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<string[]>([
     "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "HR", "TABLE"
@@ -101,15 +102,16 @@ export class FlexiReportComponent implements OnChanges {
   readonly onSave = output<any>();
   readonly onNewReport = output<void>();
   readonly onDelete = output<any>();
+  readonly onEndpointChange = output<string>();
 
   readonly #renderer = inject(Renderer2);
   readonly #dragDrop = inject(DragDrop);
   readonly style = inject(StyleService);
-  readonly page = inject(PageService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.reportSignal()) {
       this.loadReport();
+      this.changePageSetting();
 
       if (!this.isPreview()) this.restoreDragFeature();
       else this.preview();
@@ -141,6 +143,11 @@ export class FlexiReportComponent implements OnChanges {
         textDecoration: newElement.style.textDecoration || "none"
       });
       if (type === "table") {
+        const th = newElement.querySelector("th");
+        this.style.elementStyle().borderWidth = th?.style.borderWidth;
+        this.style.elementStyle().borderStyle = th?.style.borderStyle;
+        this.style.elementStyle().borderColor = this.rgbStringToHex(th?.style.borderColor || "#000000");
+
         this.getTableHeads(newElement);
       }
     });
@@ -248,15 +255,17 @@ export class FlexiReportComponent implements OnChanges {
 
     this.preview();
 
-    const pageWidth = +this.page.pageSetting().width.replace("px", "");
-    const pageHeight = +this.page.pageSetting().height.replace("px", "");
+    const pageWidth = +this.pageSetting().width.replace("px", "");
+    const pageHeight = +this.pageSetting().height.replace("px", "");
 
     const pdf = new jsPDF({
-      orientation: this.page.orientation(),
+      orientation: this.reportSignal().pageOrientation,
       unit: 'px',
       format: [pageWidth, pageHeight]
     });
 
+    pdf.addFont("https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf", "Roboto", "normal");
+    pdf.setFont("Roboto");
     pdf.html(this.pdfArea().nativeElement, {
       callback: (doc) => {
         doc.save('report.pdf');
@@ -267,9 +276,9 @@ export class FlexiReportComponent implements OnChanges {
       windowWidth: pageWidth
     });
 
-    // setTimeout(() => {
-    //   this.clear();
-    // }, 500);
+    setTimeout(() => {
+      this.clear();
+    }, 500);
   }
 
   preview() {
@@ -295,7 +304,10 @@ export class FlexiReportComponent implements OnChanges {
       const headers = Array.from(table.querySelectorAll("th")).map(th => ({
         property: th.getAttribute("data-bind") || "",
         width: th.style.width || "auto",
-        textAlign: th.style.textAlign || "start"
+        textAlign: th.style.textAlign || "start",
+        borderWidth: th.style.borderWidth || "1px",
+        borderStyle: th.style.borderStyle || "solid",
+        borderColor: th.style.borderColor || "black",
       }));
 
       this.data()!.forEach((res, i) => {
@@ -304,11 +316,11 @@ export class FlexiReportComponent implements OnChanges {
 
         headers.forEach(header => {
           const cell = this.#renderer.createElement("td");
-          cell.style.borderWidth = "1px";
-          cell.style.borderStyle = "solid";
-          cell.style.borderColor = "black";
+          cell.style.borderWidth = header.borderWidth;
+          cell.style.borderStyle = header.borderStyle;
+          cell.style.borderColor = header.borderColor;
           cell.style.textAlign = header.textAlign;
-          const value = header.property ? (header.property === "index" ? i + 1 : res[header.property] || "") : "";
+          const value = header.property ? (header.property === "index" ? i + 1 : this.getNestedValue(res, header.property) || "") : "";
           this.#renderer.appendChild(cell, this.#renderer.createText(value));
           //this.#renderer.setStyle(cell, "padding", "5px");
           this.#renderer.appendChild(row, cell);
@@ -316,6 +328,10 @@ export class FlexiReportComponent implements OnChanges {
         this.#renderer.appendChild(tbody, row);
       });
     });
+  }
+
+  getNestedValue(obj: any, path: string, defaultValue: any = ""): any {
+    return path.split('.').reduce((acc, key) => acc && acc[key] !== undefined ? acc[key] : defaultValue, obj);
   }
 
   clear() {
@@ -329,9 +345,29 @@ export class FlexiReportComponent implements OnChanges {
     this.clearAllSelectedClass();
   }
 
-  getObjectProperties(data: any[]): string[] {
-    const properties = data.length > 0 ? Object.keys(data[0]) : [];
-    properties.unshift("index");
+  getObjectProperties(data: any[], prefix = ""): string[] {
+    if (!data || data.length === 0) return [];
+
+    const properties: string[] = ["index"];
+
+    function extractProperties(obj: any, parentKey = "") {
+      if (!obj || typeof obj !== "object") return;
+
+      for (const key of Object.keys(obj)) {
+        const newKey = parentKey ? `${parentKey}.${key}` : key;
+        properties.push(newKey);
+
+        const value = obj[key];
+        if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && value[0] !== null) {
+          extractProperties(value[0], newKey);
+        } else if (typeof value === "object" && value !== null) {
+          extractProperties(value, newKey);
+        }
+      }
+    }
+
+    extractProperties(data[0]);
+
     return properties;
   }
 
@@ -380,9 +416,9 @@ export class FlexiReportComponent implements OnChanges {
       const th = this.#renderer.createElement("th");
       this.#renderer.appendChild(th, this.#renderer.createText(head.value));
       this.#renderer.setStyle(th, 'padding', '5px');
-      this.#renderer.setStyle(th, 'border-width', '1px');
-      this.#renderer.setStyle(th, 'border-style', 'solid');
-      this.#renderer.setStyle(th, 'border-color', 'black');
+      this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().borderWidth || '1px');
+      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().borderStyle || 'solid');
+      this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().borderColor || 'black');
       this.#renderer.setStyle(th, 'width', head.width);
       this.#renderer.setStyle(th, 'text-align', head.textAlign);
       if (head.property) {
@@ -474,5 +510,45 @@ export class FlexiReportComponent implements OnChanges {
 
     const [r, g, b] = match.map(Number);
     return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
+  }
+
+  changePageSetting() {
+    if (this.reportSignal().pageOrientation === "portrait") {
+      if (this.reportSignal().pageSize === "a4") {
+        this.pageSetting.set({
+          width: "794px",
+          height: "1123px",
+        });
+      } else if (this.reportSignal().pageSize === "a5") {
+        this.pageSetting.set({
+          width: "559px",
+          height: "794px"
+        });
+      }
+      else if (this.reportSignal().pageSize === "a6") {
+        this.pageSetting.set({
+          width: "397px",
+          height: "559px"
+        });
+      }
+    } else if (this.reportSignal().pageOrientation === "landscape") {
+      if (this.reportSignal().pageSize === "a4") {
+        this.pageSetting.set({
+          width: "1123px",
+          height: "794px"
+        });
+      } else if (this.reportSignal().pageSize === "a5") {
+        this.pageSetting.set({
+          width: "794px",
+          height: "559px"
+        });
+      }
+      else if (this.reportSignal().pageSize === "a6") {
+        this.pageSetting.set({
+          width: "559px",
+          height: "397px"
+        });
+      }
+    }
   }
 }

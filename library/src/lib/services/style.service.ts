@@ -86,4 +86,22 @@ export class StyleService {
       this.selectedElement()!.style.margin = this.elementStyle().margin!;
     }
   }
+
+  changeTableBorder(){
+    debugger
+    const ths = this.selectedElement()?.querySelectorAll("th");
+    const tds = this.selectedElement()?.querySelectorAll("td");
+
+    ths?.forEach(el => {
+      el.style.borderWidth = this.elementStyle().borderWidth || "0px";
+      el.style.borderStyle = this.elementStyle().borderStyle || "unset";
+      el.style.borderColor = this.elementStyle().borderColor || "black";
+    })
+
+    tds?.forEach(el => {
+      el.style.borderWidth = this.elementStyle().borderWidth || "0px";
+      el.style.borderStyle = this.elementStyle().borderStyle || "unset";
+      el.style.borderColor = this.elementStyle().borderColor || "black";
+    })
+  }
 }

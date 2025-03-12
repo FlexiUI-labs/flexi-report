@@ -17,7 +17,9 @@ import { ReportService } from './report.service';
       [isPreview]="isPreview()"
       [editPath]="editPath()"
       (onNewReport)="onNewReport()"
-      (onDelete)="onDelete($event)"/>
+      (onDelete)="onDelete($event)"
+      (onEndpointChange)="onEndpointChange($event)"
+      />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None
@@ -26,6 +28,7 @@ export class ReportComponent {
   readonly id = signal<string | undefined | null>(undefined);
   readonly editPath = computed(() => `/report/edit/${this.id()}`);
   readonly type = signal<string>("");
+  readonly endpoint = linkedSignal(() => this.reportResult.value()?.endpoint ?? "")
 
   readonly isPreview = computed(() => {
     if(!this.id()) return false;
@@ -46,8 +49,9 @@ export class ReportComponent {
   readonly reportLoading = computed(() => this.reportResult.isLoading());
 
   readonly result = resource({
-    loader: async () => {
-      var res = await lastValueFrom(this.http.get<any[]>("https://jsonplaceholder.typicode.com/todos"));
+    request: this.endpoint,
+    loader: async ({request}) => {
+      var res = await lastValueFrom(this.http.get<any[]>(request));
       return res;
     }
   })
@@ -82,5 +86,9 @@ export class ReportComponent {
       this.#report.reportResult.reload();
       this.router.navigateByUrl("/report/edit");
     });
+  }
+
+  onEndpointChange(endpoint: string){
+    this.endpoint.set(endpoint);
   }
 }

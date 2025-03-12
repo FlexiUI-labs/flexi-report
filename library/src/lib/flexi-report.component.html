@@ -22,7 +22,7 @@
                     <div class="flexi-report-setting-subtitle">{{ propertiesText() }}</div>
                     <div>
                         <strong>{{ endpointText() }}</strong>
-                        <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint">
+                        <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint" (change)="onEndpointChange.emit(reportSignal().endpoint)">
                     </div>
                     <div style="margin-top: 5px;">
                         <strong>{{ reportTitleText() }}</strong>
@@ -37,7 +37,7 @@
                         <tr>
                             <th>{{ pageSizeText() }}</th>
                             <td>
-                                <select class="flexi-report-select" [(ngModel)]="page.pageSize">
+                                <select class="flexi-report-select" [(ngModel)]="reportSignal().pageSize" (change)="changePageSetting()">
                                     <option value="a4">A4</option>
                                     <option value="a5">A5</option>
                                     <option value="a6">A6</option>
@@ -47,16 +47,16 @@
                         <tr>
                             <th>{{ pageOrientationText() }}</th>
                             <td>
-                                <select class="flexi-report-select" [(ngModel)]="page.orientation">
-                                    <option value="portrait">{{ landscapeText() }}</option>
-                                    <option value="landscape">{{ portraitText() }}</option>
+                                <select class="flexi-report-select" [(ngModel)]="reportSignal().pageOrientation" (change)="changePageSetting()">
+                                    <option value="portrait">{{ portraitText() }}</option>
+                                    <option value="landscape">{{ landscapeText() }}</option>
                                 </select>
                             </td>
                         </tr>
                         <tr>
                             <th>{{ pageFontFamilyText() }}</th>
                             <td>
-                                <select class="flexi-report-select" [(ngModel)]="page.fontFamily">
+                                <select class="flexi-report-select" [(ngModel)]="reportSignal().fontFamily">
                                     @for(family of fontFamilies(); track family){
                                         <option>{{family}}</option>
                                     }
@@ -199,6 +199,35 @@
                           <input class="flexi-report-input" type="text" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
                         </td>
                     </tr>
+                }@else{
+                    <tr>
+                        <th>Border Width</th>
+                        <td>
+                            <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().borderWidth" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Border Style</th>
+                        <td>
+                            <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().borderStyle" >
+                                @for(border of borderStles(); track border){
+                                    <option>{{border}}</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Border Color</th>
+                        <td>
+                            <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().borderColor" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Border Radius</th>
+                        <td>
+                          <input class="flexi-report-input" type="text" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
+                        </td>
+                    </tr>
                 }
             </table>
 
@@ -264,8 +293,8 @@
     </div>
     <div class="flex-report-content-part">
         <h1>Report Page</h1>
-        <div style="border: 1px solid; position: relative; overflow: auto;" [style.width]="page.pageSetting().width"
-            [style.height]="page.pageSetting().height" [style.width]="page.pageSetting().width" [style.fontFamily]="page.fontFamily()">
+        <div style="border: 1px solid; position: relative; overflow: auto;" [style.width]="pageSetting().width"
+            [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
             <div #pdfArea>
                 <div #elementArea></div>
             </div>
