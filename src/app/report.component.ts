@@ -66,7 +66,10 @@ export class ReportComponent {
   }
 
   onSave(report:any){
-    this.http.post("https://localhost:7032",report).subscribe(() => this.#report.reportResult.reload());
+    this.http.post("https://localhost:7032",report).subscribe((res:any) => {
+      this.id.set(res.id)
+      this.#report.reportResult.reload();
+    });
   }
 
   onNewReport(){

@@ -32,7 +32,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly isPreview = input<boolean>(false);
 
   readonly elements = signal<string[]>([
-    "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "TABLE"
+    "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "HR", "TABLE"
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
@@ -124,6 +124,8 @@ export class FlexiReportComponent implements OnChanges {
       newElement = this.createSpan();
     } else if (type === "p") {
       newElement = this.createParagraph();
+    } else if (type === "hr") {
+      newElement = this.createHr();
     } else if (type === "table") {
       newElement = this.createTable();
     }
@@ -135,7 +137,6 @@ export class FlexiReportComponent implements OnChanges {
     this.attachClickListener(newElement, type);
 
     this.#renderer.setStyle(newElement, 'cursor', 'move');
-    this.#renderer.setStyle(newElement, 'padding', '10px');
     this.#renderer.appendChild(this.elementArea().nativeElement, newElement);
 
     this.#dragDrop.createDrag(newElement);
@@ -163,6 +164,11 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.appendChild(span, text);
     this.#renderer.setStyle(span, 'display', 'inline-block');
     return span;
+  }
+
+  createHr(): HTMLElement {
+    const hr = this.#renderer.createElement("hr");
+    return hr;
   }
 
   createTable(): HTMLElement {
@@ -264,10 +270,11 @@ export class FlexiReportComponent implements OnChanges {
           const cell = this.#renderer.createElement("td");
           const value = header.property ? (header.property === "index" ? i + 1 : res[header.property] || "") : "";
           this.#renderer.appendChild(cell, this.#renderer.createText(value));
-          this.#renderer.setStyle(cell, "padding", "5px");
+          //this.#renderer.setStyle(cell, "padding", "5px");
           this.#renderer.appendChild(row, cell);
         });
 
+        debugger
         this.#renderer.appendChild(tbody, row);
       });
     });
@@ -334,15 +341,9 @@ export class FlexiReportComponent implements OnChanges {
       const th = this.#renderer.createElement("th");
       this.#renderer.appendChild(th, this.#renderer.createText(head.value));
       this.#renderer.setStyle(th, 'padding', '5px');
-      if (head.borderWidth) {
-        this.#renderer.setStyle(th, 'border-width', "1px")
-      }
-      if (head.borderStyle) {
-        this.#renderer.setStyle(th, 'border-style', "solid")
-      }
-      if (head.borderColor) {
-        this.#renderer.setStyle(th, 'border-color', "black")
-      }
+      this.#renderer.setStyle(th, 'border-width', '1px');
+      this.#renderer.setStyle(th, 'border-style', 'solid');
+      this.#renderer.setStyle(th, 'border-color', 'black');
       this.#renderer.setStyle(th, 'width', head.width);
       if (head.property) {
         this.#renderer.setAttribute(th, "data-bind", head.property);
@@ -377,7 +378,10 @@ export class FlexiReportComponent implements OnChanges {
 
     this.clearAllSelectedClass();
     this.closeStylePart();
-    this.onSave.emit(report);
+    this.clear();
+    setTimeout(() => {
+      this.onSave.emit(report);
+    }, 300);
   }
 
   loadReport() {

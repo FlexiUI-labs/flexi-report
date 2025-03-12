@@ -1,1 +1,15 @@
-/* You can add global styles to this file, and also import other style files */
+.body-content{
+    width: 100% !important;
+    margin-left: 280px;
+}
+
+@media screen and (max-width:1350px) {
+    .no-mobile{
+        display: none !important;
+    }
+
+    .body-content{
+        max-width: 98.5vw;
+        margin-left: 0px;
+    }
+}

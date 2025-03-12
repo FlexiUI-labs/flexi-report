@@ -1,0 +1,84 @@
+<div class="d-flex">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark no-mobile" style="width: 280px; height: 100vh; position: fixed;">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <svg class="bi me-2" width="40" height="32">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+            <span class="fs-4">Sidebar</span>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a routerLink="/report/edit" class="nav-link active" aria-current="page">
+                    <svg class="bi me-2" width="16" height="16">
+                        <use xlink:href="#home"></use>
+                    </svg>
+                    Report
+                </a>
+            </li>
+            @for(val of reports(); track val.id){
+                <li>
+                    <a routerLink="/report/preview/{{val.id}}" class="nav-link text-white">
+                        <svg class="bi me-2" width="16" height="16">
+                            <use xlink:href="#speedometer2"></use>
+                        </svg>
+                        {{ val.name }}
+                    </a>
+                </li>
+            }
+        </ul>
+        <hr>
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
+                <strong>mdo</strong>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                <li><a class="dropdown-item" href="#">New project...</a></li>
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="#">Sign out</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="body-content">
+        <header class="p-3 text-bg-dark w-100 no-mobile">
+            <div class="container">
+                <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+                    <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+                        <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap">
+                            <use xlink:href="#bootstrap"></use>
+                        </svg>
+                    </a>
+
+                    <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                        <li><a href="#" class="nav-link px-2 text-secondary">Home</a></li>
+                        <li><a href="#" class="nav-link px-2 text-white">Features</a></li>
+                        <li><a href="#" class="nav-link px-2 text-white">Pricing</a></li>
+                        <li><a href="#" class="nav-link px-2 text-white">FAQs</a></li>
+                        <li><a href="#" class="nav-link px-2 text-white">About</a></li>
+                    </ul>
+
+                    <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+                        <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..."
+                            aria-label="Search" spellcheck="false" data-ms-editor="true">
+                    </form>
+
+                    <div class="text-end">
+                        <button type="button" class="btn btn-outline-light me-2">Login</button>
+                        <button type="button" class="btn btn-warning">Sign-up</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="mt-5 ps-4 pe-4">
+          <router-outlet />
+        </div>
+    </div>
+</div>

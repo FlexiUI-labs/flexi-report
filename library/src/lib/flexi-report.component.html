@@ -1,8 +1,22 @@
-<div style="position: relative;">
+<div style="position: relative; display: flex; gap: 20px;">
     <div class="flex-report-setting-part">
         <div style="overflow: auto; padding: 0px 15px; margin-bottom: 30px;">
             <div>
                 <p class="flexi-report-setting-title">Flexi Report</p>
+                <hr>
+                <div class="flexi-report-setting-button-part">
+                    @if(isPreview()){
+                        <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
+                    }@else if(!isPreview() && report()?.id){
+                        <flexi-button btnColor="info" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
+                    }
+                    <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
+                    <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
+                    @if(!isPreview() && report()?.id){
+                        <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(report()!.id)" />
+                    }
+                    <flexi-button btnColor="success" [title]="DonwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
+                </div>
                 @if(!isPreview()){
                     <hr>
                     <div class="flexi-report-setting-subtitle">{{ propertiesText() }}</div>
@@ -54,20 +68,6 @@
                         </ul>
                     </div>
                 }
-            </div>
-
-            <div class="flexi-report-setting-button-part">
-                @if(isPreview()){
-                    <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
-                }@else if(!isPreview() && report()?.id){
-                    <flexi-button btnColor="info" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
-                }
-                <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
-                <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
-                @if(!isPreview() && report()?.id){
-                    <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(report()!.id)" />
-                }
-                <flexi-button btnColor="success" [title]="DonwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
             </div>
         </div>
     </div>

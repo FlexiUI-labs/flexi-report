@@ -49,21 +49,20 @@
 }
 
 .flex-report-setting-part{
-    position: fixed;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 380px;
+    width: 400px;
     border-right: 1px solid;
-    height: 99%;
+    height: auto;
 }
 
 .flex-report-content-part{
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: start;
-    margin-left: 420px;
+    justify-content: center;
+    width: 100%;
 }
 
 .flexi-report-setting-title{
