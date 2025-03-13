@@ -158,11 +158,11 @@ export class StyleService {
     const tds = this.selectedElement()?.querySelectorAll("td");
 
     ths?.forEach(el => {
-      el.style.fontSize = this.elementStyle().thFontSize || "16px";
+      el.style.fontSize = this.elementStyle().thFontSize || el.style.fontSize || "12px";
     });
 
     tds?.forEach(el => {
-      el.style.fontSize = this.elementStyle().tdFontSize || "14px";
+      el.style.fontSize = this.elementStyle().tdFontSize || el.style.fontSize || "10px";
     });
   }
 
