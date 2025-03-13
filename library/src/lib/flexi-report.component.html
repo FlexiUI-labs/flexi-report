@@ -1,23 +1,8 @@
 <div style="position: relative; display: flex; gap: 20px; font-family: 'IBM Plex Sans', sans-serif;">
-    <div class="flex-report-setting-part">
+    <div class="flex-report-setting-part" [style.display]="this.isPreview() ? 'none' : 'flex'">
         <div style="overflow: auto; padding: 0px 15px; margin-bottom: 30px;">
             <div>
                 <p class="flexi-report-setting-title">Flexi Report</p>
-                <hr>
-                <div class="flexi-report-setting-button-part">
-                    @if(isPreview()){
-                        <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
-                    }@else if(!isPreview()){
-                        <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
-                        <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
-                    }
-                    <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
-                    <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
-                    @if(!isPreview() && reportSignal().id){
-                        <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(reportSignal().id)" />
-                    }
-                    <flexi-button btnColor="success" [title]="DonwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
-                </div>
                 @if(!isPreview()){
                     <hr>
                     <div class="flexi-report-setting-subtitle">
@@ -112,6 +97,51 @@
             </div>
         </div>
     </div>
+    <div class="flex-report-content-part">
+        <div style="display: flex; gap: 10px; align-items: center; width: 75%; margin-bottom: 10px;">
+            <span class="flexi-report-setting-title" style="font-size: 20px;">Report Page</span>
+            <div style="display: flex; gap: 5px; justify-content: start;">
+                <flexi-button btnColor="light" btnSize="small" btnIcon="remove" (click)="zoomOut()" />
+                <input [value]="'%' + (zoomValue() * 100).toFixed(0)" style="width: 70px; text-align: center;"/>
+                <flexi-button btnColor="light" btnSize="small" btnIcon="add" (click)="zoomIn()" />
+            </div>
+            <div class="flexi-report-setting-button-part">
+                @if(isPreview()){
+                    <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
+                }@else{
+                    <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
+                    <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
+                    <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
+                    <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
+                }
+                @if(!isPreview() && reportSignal().id){
+                    <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(reportSignal().id)" />
+                }
+                @if(data()){
+                    <flexi-button btnColor="indigo" [title]="showDataResultText()" flexiTooltip="top" btnIcon="lan" (click)="openDataResultPart()" />
+                }
+                <flexi-button btnColor="success" [title]="donwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
+                <flexi-button btnColor="dark" [title]="printText()" flexiTooltip="top" btnIcon="print" (click)="print()" />
+            </div>
+        </div>
+        <div [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">
+            <div style="border: 1px solid; position: relative; overflow: auto; width: 100%; border-radius: 10px;" [style.width]="pageSetting().width"
+                [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
+                    @if(loadingSignal()){
+                        <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px;">
+                            <div class="flexi-report-spinner-container">
+                                <div class="flexi-report-spinner-1"></div>
+                                <div class="flexi-report-spinner-2"></div>
+                            </div>
+                        </div>
+                    }
+                  <div #pdfArea>
+                    <div #elementArea></div>
+                  </div>
+            </div>
+        </div>
+    </div>
+
     <div class="flexi-report-style-part" #stylePart cdkDrag>
         <div>
             <div class="flexi-report-setting-subtitle">
@@ -400,22 +430,18 @@
             }
         </div>
     </div>
-    <div class="flex-report-content-part">
-        <div style="display: flex; gap: 10px; align-items: center; width: 75%;">
-            <span class="flexi-report-setting-title" style="font-size: 20px;">Report Page</span>
-            <div style="display: flex; gap: 5px; justify-content: start;">
-                <flexi-button btnColor="light" btnSize="small" btnIcon="remove" (click)="zoomOut()" />
-                <input [value]="'%' + (zoomValue() * 100).toFixed(0)" style="width: 70px; text-align: center;"/>
-                <flexi-button btnColor="light" btnSize="small" btnIcon="add" (click)="zoomIn()" />
+
+    <div class="flexi-report-data-result" #dataResultPart cdkDrag>
+        <div style="position: relative;">
+            <div>
+                <div class="flexi-report-setting-close-btn">
+                    <flexi-button btnSize="x-small" btnColor="danger" btnIcon="close" title="Close" (click)="closeDataResultPart()" />
+                </div>
             </div>
         </div>
-        <div [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">
-            <div style="border: 1px solid; position: relative; overflow: auto; width: 100%; border-radius: 10px;" [style.width]="pageSetting().width"
-                [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
-                  <div #pdfArea>
-                    <div #elementArea></div>
-                  </div>
-            </div>
+        <div style="margin-top: 50px; height: 500px; overflow: auto; padding: 10px; cursor: auto;" (mousedown)="$event.stopPropagation()">
+            <ngx-json-viewer [json]="data()" (mousedown)="$event.stopPropagation()"/>
         </div>
     </div>
+
 </div>

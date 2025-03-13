@@ -14,6 +14,7 @@ import { FlexiToastService } from 'flexi-toast';
   <flexi-report
       [report]="report()"
       [data]="data()"
+      [loading]="loading()"
       (onSave)="onSave($event)"
       [isPreview]="isPreview()"
       [editPath]="editPath()"
@@ -57,6 +58,7 @@ export class ReportComponent {
     }
   })
   readonly data = computed(() => this.result.value() ?? []);
+  readonly loading = computed(() => this.result.isLoading());
 
   readonly #http = inject(HttpClient);
   readonly #activated = inject(ActivatedRoute);

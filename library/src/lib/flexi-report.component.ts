@@ -9,6 +9,7 @@ import { FlexiButtonComponent } from 'flexi-button';
 import { ReportModel } from './models/report.model';
 import { RouterLink } from '@angular/router';
 import { FlexiTooltipDirective } from 'flexi-tooltip';
+import { NgxJsonViewerModule } from 'ngx-json-viewer';
 
 @Component({
   selector: 'flexi-report',
@@ -18,7 +19,8 @@ import { FlexiTooltipDirective } from 'flexi-tooltip';
     DragDropModule,
     FlexiButtonComponent,
     FlexiTooltipDirective,
-    RouterLink
+    RouterLink,
+    NgxJsonViewerModule
   ],
   templateUrl: "flexi-report.component.html",
   styleUrl: `flexi-report.component.css`,
@@ -31,8 +33,11 @@ export class FlexiReportComponent implements OnChanges {
   readonly report = input<ReportModel>();
   readonly editPath = input<string>();
   readonly isPreview = input<boolean>(false);
+  readonly loading = input<boolean>(false);
 
-  readonly zoomValue = linkedSignal<number>(() => this.isPreview() ? 1 : 0.6);
+  readonly loadingSignal = linkedSignal(() => this.loading());
+  readonly dataString = computed(() => JSON.stringify(this.data()) ?? "");
+  readonly zoomValue = linkedSignal<number>(() => this.isPreview() ? 1 : 0.8);
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<string[]>([
@@ -53,7 +58,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly elementsText = computed(() => this.language() === "en" ? "Elements" : "Elementler");
   readonly previewText = computed(() => this.language() === "en" ? "Preview" : "Önizleme");
   readonly clearText = computed(() => this.language() === "en" ? "Clear" : "Temizle");
-  readonly DonwloadAsPDFText = computed(() => this.language() === "en" ? "Download as PDF" : "PDF olarak İndir");
+  readonly donwloadAsPDFText = computed(() => this.language() === "en" ? "Download as PDF" : "PDF olarak İndir");
   readonly styleSettingsText = computed(() => this.language() === "en" ? "Style Settings" : "Style Ayarları");
   readonly tableHeadersSettingsText = computed(() => this.language() === "en" ? "Table Headers Settings" : "Table Başlık Ayarları");
   readonly noSelectText = computed(() => this.language() === "en" ? "No select" : "Seçim yapılmadı");
@@ -69,10 +74,13 @@ export class FlexiReportComponent implements OnChanges {
   readonly pageFontFamilyText = computed(() => this.language() === "en" ? "Font Family" : "Font Family");
   readonly showFooterText = computed(() => this.language() === "en" ? "Show Footer" : "Footer Göster");
   readonly selectImageText = computed(() => this.language() === "en" ? "Select Image" : "Resim Seç");
+  readonly showDataResultText = computed(() => this.language() === "en" ? "Show Data Result" : "Data Resultu Göster");
+  readonly printText = computed(() => this.language() === "en" ? "Print" : "Yazdır");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
   readonly stylePart = viewChild.required<ElementRef>("stylePart");
+  readonly dataResultPart = viewChild.required<ElementRef>("dataResultPart");
 
   readonly onSave = output<any>();
   readonly onNewReport = output<void>();
@@ -108,7 +116,7 @@ export class FlexiReportComponent implements OnChanges {
         borderWidth: newElement.style.borderWidth || "0px",
         borderStyle: newElement.style.borderStyle || "unset",
         borderColor: this.rgbStringToHex(newElement.style.borderColor),
-        fontSize: newElement.style.fontSize || "12px",
+        fontSize: newElement.style.fontSize || "11px",
         fontFamily: newElement.style.fontFamily || "IBM Plex Sans",
         color: this.rgbStringToHex(newElement.style.color),
         backgroundColor: newElement.style.backgroundColor === "" ? "#ffffff" : this.rgbStringToHex(newElement.style.backgroundColor),
@@ -125,7 +133,7 @@ export class FlexiReportComponent implements OnChanges {
           thBorderWidth: th?.style.borderWidth,
           thBorderStyle: th?.style.borderStyle,
           thBorderColor: this.rgbStringToHex(th?.style.borderColor || "#000000"),
-          thFontSize: th?.style.fontSize || "12px",
+          thFontSize: th?.style.fontSize || "11px",
         }));
 
         const td = newElement.querySelector("td");
@@ -226,7 +234,7 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
       this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'dotted');
       this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
-      this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '12px');
+      this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
       this.#renderer.setStyle(th, 'padding', '5px');
       this.#renderer.appendChild(headerRow, th);
     }
@@ -263,11 +271,13 @@ export class FlexiReportComponent implements OnChanges {
     });
   }
 
-  downloadAsPDF() {
+  async downloadAsPDF() {
     if (!this.pdfArea()) return;
 
     this.preview();
+    this.loadingSignal.set(true);
 
+    await new Promise(resolve => setTimeout(resolve, 100));
     const pageWidth = +this.pageSetting().width.replace("px", "");
     const pageHeight = +this.pageSetting().height.replace("px", "");
 
@@ -292,6 +302,8 @@ export class FlexiReportComponent implements OnChanges {
       width: pageWidth,
       windowWidth: pageWidth
     });
+
+    this.loadingSignal.set(false);
   }
 
   preview() {
@@ -330,7 +342,11 @@ export class FlexiReportComponent implements OnChanges {
         format: th.getAttribute("data-format") || "",
         width: th.style.width || "auto",
         textAlign: th.style.textAlign || "start",
-        footerValue: th.getAttribute("data-footer") || ""
+        footerValue: th.getAttribute("data-footer") || "",
+        borderWidth: th.style.borderWidth,
+        borderStyle: th.style.borderStyle,
+        borderColor: th.style.borderColor,
+        fontSize: th.style.fontSize,
       }));
 
       this.data()!.forEach((res, i) => {
@@ -376,12 +392,14 @@ export class FlexiReportComponent implements OnChanges {
             total = total / this.data()!.length
             value = this.formatValue(total.toString(), header.format);
           }
+          const theadTH = headers[index];
           this.#renderer.appendChild(footerCell, this.#renderer.createText(value));
-          this.#renderer.setStyle(footerCell, 'border-width', tfootTH?.style.borderWidth || '1px');
-          this.#renderer.setStyle(footerCell, 'border-style', tfootTH?.style.borderStyle || 'dotted');
-          this.#renderer.setStyle(footerCell, 'border-color', tfootTH?.style.borderColor || 'black');
+          this.#renderer.setStyle(footerCell, 'border-width', theadTH.borderWidth || '1px');
+          this.#renderer.setStyle(footerCell, 'border-style', theadTH.borderStyle || 'dotted');
+          this.#renderer.setStyle(footerCell, 'border-color', theadTH.borderColor || 'black');
+          this.#renderer.setStyle(footerCell, 'text-align', theadTH.textAlign || 'start');
           this.#renderer.setStyle(footerCell, 'font-weight', 'bold');
-          this.#renderer.setStyle(footerCell, 'font-size', tfootTH?.style.fontSize || '12px');
+          this.#renderer.setStyle(footerCell, 'font-size', theadTH.fontSize || '11px');
           this.#renderer.appendChild(footerRow, footerCell);
         });
 
@@ -425,6 +443,7 @@ export class FlexiReportComponent implements OnChanges {
   clear() {
     const tables = this.pdfArea().nativeElement.querySelectorAll("table");
     tables.forEach((table: HTMLElement) => {
+      const theads = table.querySelectorAll("thead th") as NodeListOf<HTMLElement>;
       let tbody = table.querySelector("tbody");
       const tbodyTD = table.querySelector("tbody td") as HTMLElement;
 
@@ -444,7 +463,7 @@ export class FlexiReportComponent implements OnChanges {
 
       for (let j = 0; j < 3; j++) {
         const bodyRow = this.#renderer.createElement("tr");
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < theads.length; i++) {
           const td = this.#renderer.createElement("td");
           this.#renderer.appendChild(td, this.#renderer.createText(`Example ${i + 1}`));
           this.#renderer.setStyle(td, 'border-width', tbodyTD?.style.borderWidth || '1px');
@@ -463,13 +482,15 @@ export class FlexiReportComponent implements OnChanges {
         const tr = this.#renderer.createElement("tr");
         this.#renderer.appendChild(tfoot, tr);
 
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < theads.length; i++) {
           const th = this.#renderer.createElement("th");
-          this.#renderer.setStyle(th, 'border-width', tfootTH?.style.borderWidth || theadTH?.style.borderWidth || '1px');
-          this.#renderer.setStyle(th, 'border-style', tfootTH?.style.borderStyle || theadTH?.style.borderWidth || 'dotted');
-          this.#renderer.setStyle(th, 'border-color', tfootTH?.style.borderColor || theadTH?.style.borderColor || 'black');
-          this.#renderer.setStyle(th, 'font-size', tfootTH?.style.fontSize || theadTH?.style.fontSize || '12px');
-          this.#renderer.setStyle(th, 'padding', tfootTH?.style.padding || theadTH?.style.padding || '5px');
+          const theadTH = theads[i];
+          this.#renderer.setStyle(th, 'border-width', theadTH.style.borderWidth || '1px');
+          this.#renderer.setStyle(th, 'border-style', theadTH.style.borderWidth || 'dotted');
+          this.#renderer.setStyle(th, 'border-color', theadTH.style.borderColor || 'black');
+          this.#renderer.setStyle(th, 'text-align', theadTH.style.textAlign || 'black');
+          this.#renderer.setStyle(th, 'font-size', theadTH.style.fontSize || '11px');
+          this.#renderer.setStyle(th, 'padding', theadTH.style.padding || '5px');
           if (i === 0) th.innerText = "Footer";
           this.#renderer.appendChild(tr, th);
         }
@@ -496,7 +517,7 @@ export class FlexiReportComponent implements OnChanges {
         this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
         this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'dotted');
         this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
-        this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '12px');
+        this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
         this.#renderer.setStyle(th, 'padding', '5px');
         if (i === 0) th.innerText = "Footer";
         this.#renderer.appendChild(tr, th);
@@ -593,7 +614,7 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
       this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'dotted');
       this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
-      this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '12px');
+      this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
       this.#renderer.setStyle(th, 'width', head.width);
       this.#renderer.setStyle(th, 'text-align', head.textAlign);
       if (head.property) {
@@ -774,5 +795,37 @@ export class FlexiReportComponent implements OnChanges {
     if (this.zoomValue() > 0.2) {
       this.zoomValue.update(prev => prev -= 0.1);
     }
+  }
+
+  openDataResultPart(){
+    this.dataResultPart().nativeElement.style.display = "block";
+  }
+
+  closeDataResultPart(){
+    this.dataResultPart().nativeElement.style.display = "none";
+  }
+
+  print() {
+    const printContent = this.pdfArea().nativeElement.innerHTML;
+    const printWindow = window.open('', '_blank');
+    printWindow!.document.open();
+    printWindow!.document.write(`
+      <html>
+        <head>
+          <style>
+            @media print {
+              @page { size: ${this.reportSignal().pageSize.toUpperCase()} ${this.reportSignal().pageOrientation}; margin: 0; }
+            }
+            body { margin: 0; padding: 20px; }
+          </style>
+        </head>
+        <body>
+          ${printContent}
+        </body>
+      </html>
+    `);
+    printWindow!.document.close();
+    printWindow!.print();
+    printWindow!.close();
   }
 }

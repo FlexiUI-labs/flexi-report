@@ -22,6 +22,7 @@
     "flexi-toast": "^19.0.3",
     "flexi-tooltip": "^19.0.2",
     "jspdf": "^3.0.0",
+    "ngx-json-viewer": "^3.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
