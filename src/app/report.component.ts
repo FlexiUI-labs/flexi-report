@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { ReportModel } from '../../library/src/lib/models/report.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReportService } from './report.service';
+import { FlexiToastService } from 'flexi-toast';
 
 @Component({
   selector: 'app-report',
@@ -40,7 +41,7 @@ export class ReportComponent {
   readonly reportResult = resource({
     request: this.id,
     loader: async () => {
-      var res = await lastValueFrom(this.http.get<ReportModel>(`https://localhost:7032/${this.id()}`));
+      var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/${this.id()}`));
       return res;
     }
   });
@@ -51,40 +52,43 @@ export class ReportComponent {
   readonly result = resource({
     request: this.endpoint,
     loader: async ({request}) => {
-      var res = await lastValueFrom(this.http.get<any[]>(request));
+      var res = await lastValueFrom(this.#http.get<any[]>(request));
       return res;
     }
   })
   readonly data = computed(() => this.result.value() ?? []);
 
-  readonly http = inject(HttpClient);
-  readonly activated = inject(ActivatedRoute);
+  readonly #http = inject(HttpClient);
+  readonly #activated = inject(ActivatedRoute);
   readonly #report = inject(ReportService);
-  readonly router = inject(Router);
+  readonly #router = inject(Router);
+  readonly #toast = inject(FlexiToastService);
 
   constructor(){
-    this.activated.params.subscribe(res => {
+    this.#activated.params.subscribe(res => {
       this.id.set(res["id"]);
       this.type.set(res["type"]);
     });
   }
 
   onSave(report:any){
-    this.http.post("https://localhost:7032",report).subscribe((res:any) => {
+    this.#http.post("https://localhost:7032",report).subscribe((res:any) => {
       report.id = res.id;
       this.report.set(report);
       this.#report.reportResult.reload();
+      this.#toast.showToast("Success","Rapor create was successful","success");
     });
   }
 
   onNewReport(){
-    this.router.navigateByUrl("/report/edit");
+    this.#router.navigateByUrl("/report/edit");
   }
 
   onDelete(id:string){
-    this.http.delete(`https://localhost:7032/${id}`).subscribe(() => {
+    this.#http.delete(`https://localhost:7032/${id}`).subscribe(() => {
       this.#report.reportResult.reload();
-      this.router.navigateByUrl("/report/edit");
+      this.#router.navigateByUrl("/report/edit");
+      this.#toast.showToast("Success","Rapor delete was successful","info");
     });
   }
 

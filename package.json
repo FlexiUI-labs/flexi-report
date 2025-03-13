@@ -19,6 +19,7 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "flexi-button": "^19.0.22",
+    "flexi-toast": "^19.0.3",
     "flexi-tooltip": "^19.0.2",
     "jspdf": "^3.0.0",
     "rxjs": "~7.8.0",

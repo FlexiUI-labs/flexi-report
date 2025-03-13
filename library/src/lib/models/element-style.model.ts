@@ -5,7 +5,15 @@ export interface ElementStyleModel {
     borderWidth?: string;
     borderColor?: string;
     borderStyle?: string;
+    thBorderWidth?: string;
+    thBorderColor?: string;
+    thBorderStyle?: string;
+    tdBorderWidth?: string;
+    tdBorderColor?: string;
+    tdBorderStyle?: string;
     fontSize?: string;
+    thFontSize?:string;
+    tdFontSize?:string;
     fontFamily?: string;
     color?: string;
     backgroundColor?: string;
@@ -20,5 +28,5 @@ export interface ElementStyleModel {
     text: "",
     width: "100%",
     textAlign: "start",
-    fontFamily: "IBM Plex Sans"
+    fontFamily: "Roboto"
   }

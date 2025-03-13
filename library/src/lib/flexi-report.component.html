@@ -19,63 +19,96 @@
                 </div>
                 @if(!isPreview()){
                     <hr>
-                    <div class="flexi-report-setting-subtitle">{{ propertiesText() }}</div>
-                    <div>
-                        <strong>{{ endpointText() }}</strong>
-                        <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint" (change)="onEndpointChange.emit(reportSignal().endpoint)">
-                    </div>
-                    <div style="margin-top: 5px;">
-                        <strong>{{ reportTitleText() }}</strong>
-                        <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().name">
-                    </div>
-                    <div style="margin-top: 5px;">
-                        <flexi-button btnColor="info" [btnText]="saveText()" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
-                    </div>
-                    <hr>
-                    <div class="flexi-report-setting-subtitle">{{ pageSettingsText() }}</div>
-                    <table class="flexi-report-table">
-                        <tr>
-                            <th>{{ pageSizeText() }}</th>
-                            <td>
-                                <select class="flexi-report-select" [(ngModel)]="reportSignal().pageSize" (change)="changePageSetting()">
-                                    <option value="a4">A4</option>
-                                    <option value="a5">A5</option>
-                                    <option value="a6">A6</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>{{ pageOrientationText() }}</th>
-                            <td>
-                                <select class="flexi-report-select" [(ngModel)]="reportSignal().pageOrientation" (change)="changePageSetting()">
-                                    <option value="portrait">{{ portraitText() }}</option>
-                                    <option value="landscape">{{ landscapeText() }}</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>{{ pageFontFamilyText() }}</th>
-                            <td>
-                                <select class="flexi-report-select" [(ngModel)]="reportSignal().fontFamily">
-                                    @for(family of fontFamilies(); track family){
-                                        <option>{{family}}</option>
-                                    }
-                                </select>
-                            </td>
-                        </tr>
-                    </table>
-                    <hr>
-                    <div>
-                        <div class="flexi-report-setting-subtitle">{{ elementsText() }}</div>
-                        <ul class="flexi-report-ul">
-                            @for(el of elements(); track el){
-                            <li>
-                                <div class="flexi-report-cursor flexi-report-hover flexi-report-p-1" (click)="addElement(el)">
-                                    {{el}}
-                                </div>
-                            </li>
+                    <div class="flexi-report-setting-subtitle">
+                        {{ propertiesText() }}
+                        <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;" (click)="showProperties.set(!showProperties())">
+                            @if(!showProperties()){
+                                keyboard_arrow_down
+                            }@else {
+                                keyboard_arrow_up
                             }
-                        </ul>
+                        </span>
+                    </div>
+                    <div [ngClass]="showProperties() ? 'flexi-report-show' : 'flexi-report-hide'">
+                        <div>
+                            <strong>{{ endpointText() }}</strong>
+                            <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint" (change)="onEndpointChange.emit(reportSignal().endpoint)">
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <strong>{{ reportTitleText() }}</strong>
+                            <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().name">
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <flexi-button btnColor="info" [btnText]="saveText()" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="flexi-report-setting-subtitle">
+                        {{ pageSettingsText() }}
+                        <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;" (click)="showPageSettings.set(!showPageSettings())">
+                            @if(!showPageSettings()){
+                                keyboard_arrow_down
+                            }@else {
+                                keyboard_arrow_up
+                            }
+                        </span>
+                    </div>
+                    <div [ngClass]="showPageSettings() ? 'flexi-report-show' : 'flexi-report-hide'">
+                        <table class="flexi-report-table">
+                            <tr>
+                                <th>{{ pageSizeText() }}</th>
+                                <td>
+                                    <select class="flexi-report-select" [(ngModel)]="reportSignal().pageSize" (change)="changePageSetting()">
+                                        <option value="a4">A4</option>
+                                        <option value="a5">A5</option>
+                                        <option value="a6">A6</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>{{ pageOrientationText() }}</th>
+                                <td>
+                                    <select class="flexi-report-select" [(ngModel)]="reportSignal().pageOrientation" (change)="changePageSetting()">
+                                        <option value="portrait">{{ portraitText() }}</option>
+                                        <option value="landscape">{{ landscapeText() }}</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>{{ pageFontFamilyText() }}</th>
+                                <td>
+                                    <select class="flexi-report-select" [(ngModel)]="reportSignal().fontFamily">
+                                        @for(family of style.fontFamilies(); track family){
+                                            <option>{{family}}</option>
+                                        }
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <hr>
+                    <div>
+                        <div class="flexi-report-setting-subtitle">
+                            {{ elementsText() }}
+                            <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;" (click)="showElements.set(!showElements())">
+                                @if(!showElements()){
+                                    keyboard_arrow_down
+                                }@else {
+                                    keyboard_arrow_up
+                                }
+                            </span>
+                        </div>
+                        <div [ngClass]="showElements() ? 'flexi-report-show' : 'flexi-report-hide'">
+                            <ul class="flexi-report-ul">
+                                @for(el of elements(); track el){
+                                <li (click)="addElement(el)">
+                                    <div class="flexi-report-cursor flexi-report-hover flexi-report-p-1">
+                                        {{el}}
+                                    </div>
+                                </li>
+                                }
+                            </ul>
+                        </div>
                     </div>
                 }
             </div>
@@ -125,7 +158,7 @@
                         <th>Font Family</th>
                         <td>
                             <select class="flexi-report-input" [(ngModel)]="style.elementStyle().fontFamily" (change)="style.changeElementFontFamily()">
-                                @for(family of fontFamilies(); track family){
+                                @for(family of style.fontFamilies(); track family){
                                     <option>{{family}}</option>
                                 }
                             </select>
@@ -141,7 +174,7 @@
                         <th>Text Decoration</th>
                         <td>
                             <select class="flexi-report-input" [(ngModel)]="style.elementStyle().textDecoration" (change)="style.changeElementTextDecoration()">
-                                @for(decoration of textDecorations(); track decoration){
+                                @for(decoration of style.textDecorations(); track decoration){
                                     <option>{{decoration}}</option>
                                 }
                             </select>
@@ -181,7 +214,7 @@
                         <th>Border Style</th>
                         <td>
                             <select class="flexi-report-input" [(ngModel)]="style.elementStyle().borderStyle" (change)="style.changeElementBorder()">
-                                @for(border of borderStles(); track border){
+                                @for(border of style.borderStles(); track border){
                                     <option>{{border}}</option>
                                 }
                             </select>
@@ -201,25 +234,59 @@
                     </tr>
                 }@else{
                     <tr>
-                        <th>Border Width</th>
+                        <th>TH Border Width</th>
                         <td>
-                            <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().borderWidth" />
+                            <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderWidth" />
                         </td>
                     </tr>
                     <tr>
-                        <th>Border Style</th>
+                        <th>TH Border Style</th>
                         <td>
-                            <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().borderStyle" >
-                                @for(border of borderStles(); track border){
+                            <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderStyle" >
+                                @for(border of style.borderStles(); track border){
                                     <option>{{border}}</option>
                                 }
                             </select>
                         </td>
                     </tr>
                     <tr>
-                        <th>Border Color</th>
+                        <th>TH Border Color</th>
                         <td>
-                            <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().borderColor" />
+                            <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderColor" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>TH Font Size</th>
+                        <td>
+                          <input class="flexi-report-input" type="text" (input)="style.changeTableFontSize()" [(ngModel)]="style.elementStyle().thFontSize" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>TD Border Width</th>
+                        <td>
+                            <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderWidth" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>TD Border Style</th>
+                        <td>
+                            <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderStyle" >
+                                @for(border of style.borderStles(); track border){
+                                    <option>{{border}}</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>TD Border Color</th>
+                        <td>
+                            <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderColor" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>TD Font Size</th>
+                        <td>
+                          <input class="flexi-report-input" type="text" (input)="style.changeTableFontSize()" [(ngModel)]="style.elementStyle().tdFontSize" />
                         </td>
                     </tr>
                 }
@@ -293,7 +360,7 @@
     </div>
     <div class="flex-report-content-part">
         <div style="display: flex; gap: 10px; align-items: center; width: 75%;">
-            <span class="flexi-report-setting-title">Report Page</span>
+            <span class="flexi-report-setting-title" style="font-size: 20px;">Report Page</span>
             <div style="display: flex; gap: 5px; justify-content: start;">
                 <flexi-button btnColor="light" btnSize="small" btnIcon="remove" (click)="zoomOut()" />
                 <input [value]="'%' + (zoomValue() * 100).toFixed(0)" style="width: 70px; text-align: center;"/>
@@ -301,7 +368,7 @@
             </div>
         </div>
         <div [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">
-            <div style="border: 1px solid; position: relative; overflow: auto; width: 100%;" [style.width]="pageSetting().width"
+            <div style="border: 1px solid; position: relative; overflow: auto; width: 100%; border-radius: 10px;" [style.width]="pageSetting().width"
                 [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
                   <div #pdfArea>
                     <div #elementArea></div>

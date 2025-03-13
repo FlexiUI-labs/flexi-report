@@ -39,38 +39,9 @@ export class FlexiReportComponent implements OnChanges {
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
   readonly properties = computed(() => this.getObjectProperties(this.data() ?? []));
-  readonly fontFamilies = signal<string[]>([
-    "Arial",
-    "Times New Roman",
-    "Oswald",
-    "IBM Plex Sans"
-  ]);
-  readonly textDecorations = signal<string[]>([
-    "none",
-    "underline",
-    "dashed",
-    "dotted",
-    "double",
-    "line-through",
-    "overline",
-    "solid",
-    "wavy"
-  ]);
-  readonly borderStles = signal<string[]>([
-    "unset",
-    "dashed",
-    "dotted",
-    "double",
-    "groove",
-    "hidden",
-    "inherit",
-    "initial",
-    "inset",
-    "none",
-    "outset",
-    "ridge",
-    "solid"
-  ]);
+  readonly showProperties = signal<boolean>(false);
+  readonly showPageSettings = signal<boolean>(false);
+  readonly showElements = signal<boolean>(true);
 
   readonly pageSettingsText = computed(() => this.language() === "en" ? "Page Settings" : "Sayfa Ayarları");
   readonly pageSizeText = computed(() => this.language() === "en" ? "Page Size" : "Sayfa Boyutu");
@@ -144,9 +115,22 @@ export class FlexiReportComponent implements OnChanges {
       });
       if (type === "table") {
         const th = newElement.querySelector("th");
-        this.style.elementStyle().borderWidth = th?.style.borderWidth;
-        this.style.elementStyle().borderStyle = th?.style.borderStyle;
-        this.style.elementStyle().borderColor = this.rgbStringToHex(th?.style.borderColor || "#000000");
+        this.style.elementStyle.update(prev => ({
+          ...prev,
+          thBorderWidth: th?.style.borderWidth,
+          thBorderStyle: th?.style.borderStyle,
+          thBorderColor: this.rgbStringToHex(th?.style.borderColor || "#000000"),
+          thFontSize: th?.style.fontSize || "16px",
+        }));
+
+        const td = newElement.querySelector("td");
+        this.style.elementStyle.update(prev => ({
+          ...prev,
+          tdBorderWidth: td ? td.style.borderWidth : th?.style.borderWidth,
+          tdBorderStyle: td ? td.style.borderStyle : th?.style.borderStyle,
+          tdBorderColor: td ? this.rgbStringToHex(td.style.borderColor) : this.rgbStringToHex(th?.style.borderColor || "#000000"),
+          tdFontSize: td?.style.fontSize || "14px",
+        }));
 
         this.getTableHeads(newElement);
       }
@@ -215,7 +199,7 @@ export class FlexiReportComponent implements OnChanges {
   createTable(): HTMLElement {
     const table = this.#renderer.createElement("table");
     this.#renderer.setStyle(table, 'border-collapse', 'collapse');
-    this.#renderer.setStyle(table, 'width', '90%');
+    this.#renderer.setStyle(table, 'width', '97%');
 
     const thead = this.#renderer.createElement("thead");
     const tbody = this.#renderer.createElement("tbody");
@@ -310,9 +294,6 @@ export class FlexiReportComponent implements OnChanges {
         format: th.getAttribute("data-format") || "",
         width: th.style.width || "auto",
         textAlign: th.style.textAlign || "start",
-        borderWidth: th.style.borderWidth || "1px",
-        borderStyle: th.style.borderStyle || "solid",
-        borderColor: th.style.borderColor || "black",
       }));
 
       this.data()!.forEach((res, i) => {
@@ -321,9 +302,10 @@ export class FlexiReportComponent implements OnChanges {
 
         headers.forEach(header => {
           const cell = this.#renderer.createElement("td");
-          cell.style.borderWidth = header.borderWidth;
-          cell.style.borderStyle = header.borderStyle;
-          cell.style.borderColor = header.borderColor;
+          cell.style.borderWidth = this.style.elementStyle().tdBorderWidth;
+          cell.style.borderStyle = this.style.elementStyle().tdBorderStyle;
+          cell.style.borderColor = this.style.elementStyle().tdBorderColor;
+          cell.style.fontSize = this.style.elementStyle().tdFontSize;
           cell.style.textAlign = header.textAlign;
           let value = header.property ? (header.property === "index" ? i + 1 : this.getNestedValue(res, header.property) || "") : "";
           if (header.format) {
@@ -457,9 +439,10 @@ export class FlexiReportComponent implements OnChanges {
       const th = this.#renderer.createElement("th");
       this.#renderer.appendChild(th, this.#renderer.createText(head.value));
       this.#renderer.setStyle(th, 'padding', '5px');
-      this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().borderWidth || '1px');
-      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().borderStyle || 'solid');
-      this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().borderColor || 'black');
+      this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
+      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'solid');
+      this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
+      this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().fontSize || '16px');
       this.#renderer.setStyle(th, 'width', head.width);
       this.#renderer.setStyle(th, 'text-align', head.textAlign);
       if (head.property) {
@@ -488,18 +471,17 @@ export class FlexiReportComponent implements OnChanges {
 
   saveReport() {
     if (!this.pdfArea()) return;
+
+    this.clearAllSelectedClass();
+    this.closeStylePart();
+    this.clear();
+
     const reportContent = this.elementArea().nativeElement.innerHTML;
     this.reportSignal.update(prev => ({
       ...prev,
       content: reportContent
     }));
-
-    this.clearAllSelectedClass();
-    this.closeStylePart();
-    this.clear();
-    setTimeout(() => {
-      this.onSave.emit(this.reportSignal());
-    }, 300);
+    this.onSave.emit(this.reportSignal());
   }
 
   loadReport() {

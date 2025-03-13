@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
 
-.flexi-report-cursor{
+.flexi-report-cursor {
     cursor: pointer;
 }
 
-.flexi-report-hover:hover{
+.flexi-report-hover:hover {
     background-color: #f1f1f1;
 }
 
-.flexi-report-p-1{
+.flexi-report-p-1 {
     padding: 10px;
 }
 
@@ -41,17 +41,18 @@
     background-color: #f1f1f1;
 }
 
-.flexi-report-table{
+.flexi-report-table {
     border-collapse: collapse;
     width: 100%;
 }
 
-.flexi-report-table th, .flexi-report-table td{
+.flexi-report-table th,
+.flexi-report-table td {
     border: 1px solid;
     text-align: left;
 }
 
-.flex-report-setting-part{
+.flex-report-setting-part {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -60,28 +61,31 @@
     height: auto;
 }
 
-.flex-report-content-part{
+.flex-report-content-part {
     width: 100%;
 }
 
-.flexi-report-setting-title{
+.flexi-report-setting-title {
     font-size: xx-large;
     text-align: center;
 }
 
-.flexi-report-setting-subtitle{
+.flexi-report-setting-subtitle {
     text-align: center;
     font-weight: bold;
     padding: 5px;
     font-size: large;
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
-.flexi-report-select{
+.flexi-report-select {
     width: 100%;
     padding: 1px;
 }
 
-.flexi-report-ul{
+.flexi-report-ul {
     list-style: none;
     display: flex;
     flex-direction: column;
@@ -91,11 +95,11 @@
     overflow: auto;
 }
 
-.flexi-report-ul li{
+.flexi-report-ul li {
     border: 1px solid;
 }
 
-.flexi-report-style-part{
+.flexi-report-style-part {
     display: none;
     cursor: pointer;
     position: absolute;
@@ -107,19 +111,19 @@
     z-index: 1;
 }
 
-.flexi-report-setting-button-part{
+.flexi-report-setting-button-part {
     display: flex;
     justify-content: center;
     gap: 5px;
 }
 
-.flexi-report-setting-close-btn{
+.flexi-report-setting-close-btn {
     position: absolute;
     top: 0px;
     right: 10px;
 }
 
-.flexi-report-input{
+.flexi-report-input {
     width: 150px;
 }
 
@@ -135,4 +139,12 @@
     right: 0;
     bottom: 0;
     cursor: se-resize;
+}
+
+.flexi-report-show {
+    display: block;
+}
+
+.flexi-report-hide {
+    display: none;
 }
