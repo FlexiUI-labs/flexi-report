@@ -7,8 +7,9 @@
                 <div class="flexi-report-setting-button-part">
                     @if(isPreview()){
                         <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
-                    }@else if(!isPreview() && reportSignal().id){
-                        <flexi-button btnColor="info" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
+                    }@else if(!isPreview()){
+                        <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
+                        <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
                     }
                     <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
                     <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
@@ -37,9 +38,6 @@
                         <div style="margin-top: 5px;">
                             <strong>{{ reportTitleText() }}</strong>
                             <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().name">
-                        </div>
-                        <div style="margin-top: 5px;">
-                            <flexi-button btnColor="info" [btnText]="saveText()" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
                         </div>
                     </div>
                     <hr>
@@ -115,7 +113,7 @@
         </div>
     </div>
     <div class="flexi-report-style-part" #stylePart cdkDrag>
-        <div style="position: relative;">
+        <div>
             <div class="flexi-report-setting-subtitle">
                 {{ styleSettingsText() }}
                 <div class="flexi-report-setting-close-btn">
@@ -232,7 +230,7 @@
                           <input class="flexi-report-input" type="text" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
                         </td>
                     </tr>
-                }@else{
+                }@else if(style.elementType() === "TABLE"){
                     <tr>
                         <th>TH Border Width</th>
                         <td>
@@ -289,16 +287,23 @@
                           <input class="flexi-report-input" type="text" (input)="style.changeTableFontSize()" [(ngModel)]="style.elementStyle().tdFontSize" />
                         </td>
                     </tr>
+                    <tr>
+                        <th>{{showFooterText()}}</th>
+                        <td>
+                            <input type="checkbox" id="showFooterCheckbox" [checked]="style.showFooter()" (change)="changeShowFooter($event)" />
+                        </td>
+                    </tr>
                 }
             </table>
 
             <div style="text-align: center;">
                 <flexi-button btnColor="danger" btnSize="medium" btnIcon="delete" [title]="deleteElementText()" (click)="deleteElement()" />
             </div>
+        </div>
+        <div style="padding: 5px 15px;">
             @if(style.elementType() === "TABLE"){
-                <hr>
-                <div style="max-height: 420px; overflow: auto; padding: 5px 25px;">
-                    <div class="flexi-report-setting-subtitle">{{ tableHeadersSettingsText() }}</div>
+                <div class="flexi-report-setting-subtitle">{{ tableHeadersSettingsText() }}</div>
+                <div style="max-height: 420px; overflow: auto; padding: 2px 10px">
                     <table style="margin-bottom: 5px; text-align: left;" (mousedown)="$event.stopPropagation()">
                         @for(head of tableHeads(); track head){
                             <tr>
@@ -340,6 +345,14 @@
                                     <input class="flexi-report-input" [(ngModel)]="head.format" (input)="updateTableHeads()" />
                                 </td>
                             </tr>
+                            @if(style.showFooter()){
+                                <tr>
+                                    <th>Footer</th>
+                                    <td>
+                                        <input class="flexi-report-input" [(ngModel)]="head.footerValue" (input)="updateTableHeads()" />
+                                    </td>
+                                </tr>
+                            }
                             <tr>
                                 <th>#</th>
                                 <td>

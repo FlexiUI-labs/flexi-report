@@ -101,6 +101,7 @@
 
 .flexi-report-style-part {
     display: none;
+    gap: 10px;
     cursor: pointer;
     position: absolute;
     left: 430px;
@@ -119,8 +120,8 @@
 
 .flexi-report-setting-close-btn {
     position: absolute;
-    top: 0px;
-    right: 10px;
+    top: 10px;
+    right: 20px;
 }
 
 .flexi-report-input {

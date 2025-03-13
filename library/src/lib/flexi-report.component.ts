@@ -1,6 +1,6 @@
 import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
@@ -21,7 +21,9 @@ import { FlexiTooltipDirective } from 'flexi-tooltip';
     RouterLink
   ],
   templateUrl: "flexi-report.component.html",
-  styleUrl: `flexi-report.component.css`
+  styleUrl: `flexi-report.component.css`,
+  encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FlexiReportComponent implements OnChanges {
   readonly data = input<any[]>();
@@ -65,6 +67,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly editText = computed(() => this.language() === "en" ? "Edit" : "Güncelle");
   readonly newReportText = computed(() => this.language() === "en" ? "New Report" : "Yeni Rapor");
   readonly pageFontFamilyText = computed(() => this.language() === "en" ? "Font Family" : "Font Family");
+  readonly showFooterText = computed(() => this.language() === "en" ? "Show Footer" : "Footer Göster");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -95,7 +98,7 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.addClass(newElement, 'flexi-report-selected');
       //this.makeResizable(newElement);
       this.style.selectedElement.set(newElement);
-      this.stylePart().nativeElement.style.display = "block";
+      this.stylePart().nativeElement.style.display = "flex";
       this.style.elementStyle.set({
         text: newElement.innerText,
         width: newElement.style.width,
@@ -202,10 +205,7 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setStyle(table, 'width', '97%');
 
     const thead = this.#renderer.createElement("thead");
-    const tbody = this.#renderer.createElement("tbody");
-
     this.#renderer.appendChild(table, thead);
-    this.#renderer.appendChild(table, tbody);
 
     const headerRow = this.#renderer.createElement("tr");
     for (let i = 0; i < 3; i++) {
@@ -218,6 +218,24 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.appendChild(headerRow, th);
     }
     this.#renderer.appendChild(thead, headerRow);
+
+    const tbody = this.#renderer.createElement("tbody");
+    this.#renderer.appendChild(table, tbody);
+
+    for (let j = 0; j < 3; j++) {
+      const bodyRow = this.#renderer.createElement("tr");
+      for (let i = 0; i < 3; i++) {
+        const td = this.#renderer.createElement("td");
+        this.#renderer.appendChild(td, this.#renderer.createText(`Example ${i + 1}`));
+        this.#renderer.setStyle(td, 'border-width', '1px');
+        this.#renderer.setStyle(td, 'border-style', 'solid');
+        this.#renderer.setStyle(td, 'border-color', 'black');
+        this.#renderer.setStyle(td, 'padding', '5px');
+        this.#renderer.addClass(td, "remove-after");
+        this.#renderer.appendChild(bodyRow, td);
+      }
+      this.#renderer.appendChild(tbody, bodyRow);
+    }
 
     return table;
   }
@@ -281,6 +299,11 @@ export class FlexiReportComponent implements OnChanges {
       if (!bindProperty || !this.data()) return;
 
       let tbody: any = table.querySelector("tbody");
+      const td = tbody.querySelector("td");
+      const tdBorderWidth = td.style.borderWidth;
+      const tdBorderStyle = td.style.borderStyle;
+      const tdBorderColor = td.style.borderColor;
+      const tdFontSize = td.style.fontSize;
 
       if (!tbody) {
         tbody = this.#renderer.createElement("tbody");
@@ -289,11 +312,17 @@ export class FlexiReportComponent implements OnChanges {
 
       tbody.querySelectorAll(".remove-after").forEach((el: any) => el.remove());
 
+      let tfoot:any = table.querySelector("tfoot");
+      if(tfoot){
+        tfoot.remove();
+      }
+
       const headers = Array.from(table.querySelectorAll("th")).map(th => ({
         property: th.getAttribute("data-bind") || "",
         format: th.getAttribute("data-format") || "",
         width: th.style.width || "auto",
         textAlign: th.style.textAlign || "start",
+        footerValue: th.getAttribute("data-footer") || ""
       }));
 
       this.data()!.forEach((res, i) => {
@@ -302,21 +331,51 @@ export class FlexiReportComponent implements OnChanges {
 
         headers.forEach(header => {
           const cell = this.#renderer.createElement("td");
-          cell.style.borderWidth = this.style.elementStyle().tdBorderWidth;
-          cell.style.borderStyle = this.style.elementStyle().tdBorderStyle;
-          cell.style.borderColor = this.style.elementStyle().tdBorderColor;
-          cell.style.fontSize = this.style.elementStyle().tdFontSize;
+          cell.style.borderWidth = tdBorderWidth;
+          cell.style.borderStyle = tdBorderStyle;
+          cell.style.borderColor = tdBorderColor;
+          cell.style.fontSize = tdFontSize;
           cell.style.textAlign = header.textAlign;
           let value = header.property ? (header.property === "index" ? i + 1 : this.getNestedValue(res, header.property) || "") : "";
           if (header.format) {
             value = this.formatValue(value, header.format);
           }
           this.#renderer.appendChild(cell, this.#renderer.createText(value));
-          //this.#renderer.setStyle(cell, "padding", "5px");
           this.#renderer.appendChild(row, cell);
         });
         this.#renderer.appendChild(tbody, row);
       });
+
+      if (table.getAttribute("data-show-footer") === "true" && this.data()) {
+        const tfoot = this.#renderer.createElement("tfoot");
+        const footerRow = this.#renderer.createElement("tr");
+        this.#renderer.appendChild(tfoot, footerRow);;
+
+        headers.forEach((header, index) => {
+          const footerCell = this.#renderer.createElement("td");
+          let value = header.footerValue;
+          if(value === "sum"){
+            let total = 0;
+            this.data()!.forEach(res => {
+              total += +res[header.property];
+            })
+            value = this.formatValue(total.toString(),header.format);
+          }else if(value === "average"){
+            let total = 0;
+            this.data()!.forEach(res => {
+              total += +res[header.property];
+            })
+            total = total / this.data()!.length
+            value = this.formatValue(total.toString(),header.format);
+          }
+          this.#renderer.appendChild(footerCell, this.#renderer.createText(value));
+          this.#renderer.setStyle(footerCell, 'border', '1px solid black');
+          this.#renderer.setStyle(footerCell, 'font-weight', 'bold');
+          this.#renderer.appendChild(footerRow, footerCell);
+        });
+
+        this.#renderer.appendChild(table, tfoot);
+      }
     });
   }
 
@@ -360,6 +419,82 @@ export class FlexiReportComponent implements OnChanges {
   clear() {
     const elements = this.pdfArea().nativeElement.querySelectorAll(".remove-after");
     elements.forEach((el: HTMLElement) => el.remove());
+
+    const tables = this.pdfArea().nativeElement.querySelectorAll("table");
+    tables.forEach((table: HTMLElement) => {
+      let tbody = table.querySelector("tbody");
+      if(!tbody){
+        tbody = this.#renderer.createElement("tbody");
+        this.#renderer.appendChild(table, tbody);
+      }
+
+      let tfoot = table.querySelector("tfoot");
+      tfoot?.remove();
+
+      for (let j = 0; j < 3; j++) {
+        const bodyRow = this.#renderer.createElement("tr");
+        for (let i = 0; i < 3; i++) {
+          const td = this.#renderer.createElement("td");
+          this.#renderer.appendChild(td, this.#renderer.createText(`Example ${i + 1}`));
+          this.#renderer.setStyle(td, 'border-width', '1px');
+          this.#renderer.setStyle(td, 'border-style', 'solid');
+          this.#renderer.setStyle(td, 'border-color', 'black');
+          this.#renderer.setStyle(td, 'padding', '5px');
+          this.#renderer.addClass(td, "remove-after");
+          this.#renderer.appendChild(bodyRow, td);
+        }
+        this.#renderer.appendChild(tbody, bodyRow);
+      }
+
+      if(table.getAttribute("data-show-footer") === "true"){
+        tfoot = this.#renderer.createElement("tfoot");
+        const tr = this.#renderer.createElement("tr");
+        this.#renderer.appendChild(tfoot, tr);
+
+        for (let i = 0; i < 3; i++) {
+          const th = this.#renderer.createElement("th");
+          this.#renderer.setStyle(th, 'border-width', '1px');
+          this.#renderer.setStyle(th, 'border-style', 'solid');
+          this.#renderer.setStyle(th, 'border-color', 'black');
+          this.#renderer.setStyle(th, 'padding', '5px');
+          if(i === 0) th.innerText = "Footer";
+          this.#renderer.appendChild(tr, th);
+        }
+
+        this.#renderer.appendChild(table, tfoot);
+      }
+    })
+  }
+
+  changeShowFooter(event:any){
+    const val = event.target.checked;
+    const table = this.style.selectedElement() as HTMLTableElement;
+    if(val){
+      const tfoot = this.#renderer.createElement("tfoot");
+
+      const theads = table.querySelectorAll("thead tr");
+      const tr = this.#renderer.createElement("tr");
+      this.#renderer.appendChild(tfoot, tr);
+
+      const ths = table.querySelectorAll("thead th");
+
+      for (let i = 0; i < ths.length; i++) {
+        const th = this.#renderer.createElement("th");
+        this.#renderer.setStyle(th, 'border-width', '1px');
+        this.#renderer.setStyle(th, 'border-style', 'solid');
+        this.#renderer.setStyle(th, 'border-color', 'black');
+        this.#renderer.setStyle(th, 'padding', '5px');
+        if(i === 0) th.innerText = "Footer";
+        this.#renderer.appendChild(tr, th);
+      }
+
+      this.#renderer.appendChild(table, tfoot);
+    }else{
+      let tfoot = table.querySelector("tfoot");
+      tfoot?.remove();
+    }
+
+    this.style.changeShowFooter(event);
   }
 
   closeStylePart() {
@@ -408,7 +543,9 @@ export class FlexiReportComponent implements OnChanges {
         value: th.innerText.trim(),
         width: th.style.width || "auto",
         property: th.getAttribute("data-bind") || "",
-        textAlign: th.style.textAlign || "start"
+        textAlign: th.style.textAlign || "start",
+        format: th.getAttribute("data-format") || "",
+        footerValue: th.getAttribute("data-footer") || ""
       });
     });
 
@@ -451,6 +588,9 @@ export class FlexiReportComponent implements OnChanges {
       if (head.format) {
         this.#renderer.setAttribute(th, "data-format", head.format);
       }
+      if(head.footerValue){
+        this.#renderer.setAttribute(th, "data-footer", head.footerValue);
+      }
       this.#renderer.appendChild(headerRow, th);
     });
 
@@ -486,7 +626,10 @@ export class FlexiReportComponent implements OnChanges {
 
   loadReport() {
     if (!this.pdfArea() || !this.reportSignal()) return;
-    this.elementArea().nativeElement.innerHTML = this.reportSignal()!.content;
+    if(this.reportSignal()!.content){
+      this.elementArea().nativeElement.innerHTML = this.reportSignal()!.content;
+    }
+
     this.clearAllSelectedClass();
   }
 
@@ -581,7 +724,7 @@ export class FlexiReportComponent implements OnChanges {
   zoomIn() {
     this.zoomValue.update(prev => prev += 0.1);
   }
-  
+
   zoomOut() {
     if (this.zoomValue() > 0.2) {
       this.zoomValue.update(prev => prev -= 0.1);

@@ -22,6 +22,7 @@ export interface ElementStyleModel {
     borderRadius?: string;
     fontWeight?: string;
     textDecoration?: string;
+    showFooter?: boolean;
   }
 
   export const initializeElementStyle: ElementStyleModel = {

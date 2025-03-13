@@ -148,4 +148,13 @@ export class StyleService {
       el.style.fontSize = this.elementStyle().tdFontSize || "14px";
     });
   }
+
+  showFooter(){
+    const dataset = this.selectedElement()?.dataset;
+    return dataset && dataset["showFooter"] === "true";
+  }
+
+  changeShowFooter(event:any){
+    this.selectedElement()!.setAttribute("data-show-footer", event.target.checked.toString());
+  }
 }

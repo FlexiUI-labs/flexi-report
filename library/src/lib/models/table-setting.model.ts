@@ -4,4 +4,5 @@ export interface TableSettingModel {
   property?: string;
   textAlign?: string;
   format?: string;
+  footerValue?: string;
 }
