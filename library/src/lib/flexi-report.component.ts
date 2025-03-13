@@ -94,11 +94,11 @@ export class FlexiReportComponent implements OnChanges, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    document.addEventListener("keydown", (event: KeyboardEvent) => {
-      if (event.key === "Delete") {
-        this.deleteElement();
-      }
-    });
+    // document.addEventListener("keydown", (event: KeyboardEvent) => {
+    //   if (event.key === "Delete") {
+    //     this.deleteElement();
+    //   }
+    // });
   }
 
   attachClickListener(newElement: HTMLElement, type: string) {

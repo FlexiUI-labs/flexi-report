@@ -226,6 +226,9 @@
                           <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().margin" (input)="style.changeElementMargin()" />
                         </td>
                     </tr>
+                }
+
+                @if(style.elementType() !== "TABLE"){
                     <tr>
                         <th>Border Width</th>
                         <td>
@@ -254,7 +257,9 @@
                           <input class="flexi-report-input" type="text" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
                         </td>
                     </tr>
-                }@else if(style.elementType() === "TABLE"){
+                }
+
+                @if(style.elementType() === "TABLE"){
                     <tr>
                         <th>TH Border Width</th>
                         <td>
