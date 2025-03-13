@@ -1,6 +1,8 @@
 export interface ElementStyleModel {
     text: string;
     width: string;
+    height?: string;
+    objectFit?: string;
     textAlign?: string;
     borderWidth?: string;
     borderColor?: string;

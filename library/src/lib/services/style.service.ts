@@ -41,12 +41,29 @@ export class StyleService {
     "ridge",
     "solid"
   ]);
+  readonly objectFits = signal<string[]>([
+    "unset",
+    "cover",
+    "contain",
+    "fill",
+    "none",
+    "scale-down"
+  ]);
+
   changeElementText() {
     this.selectedElement()!.innerText = this.elementStyle().text;
   }
 
   changeElementWith() {
     this.selectedElement()!.style.width = this.elementStyle().width;
+  }
+
+  changeElementHeight(){
+    this.selectedElement()!.style.height = this.elementStyle().height!;
+  }
+
+  changeElementObjectFit(){
+    this.selectedElement()!.style.objectFit = this.elementStyle().objectFit!;
   }
 
   changeElementTextAlign() {
@@ -156,5 +173,15 @@ export class StyleService {
 
   changeShowFooter(event:any){
     this.selectedElement()!.setAttribute("data-show-footer", event.target.checked.toString());
+  }
+
+  selectImage(event:any){
+    const file = event.target.files[0];
+    if (file) {
+      const el = this.selectedElement() as HTMLImageElement;
+      const reader = new FileReader();
+      reader.onload = () => el.src = reader.result as string;
+      reader.readAsDataURL(file);
+    }
   }
 }

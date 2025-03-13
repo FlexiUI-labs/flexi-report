@@ -121,7 +121,7 @@
                 </div>
             </div>
             <table style="text-align: left; margin-bottom: 5px;" (mousedown)="$event.stopPropagation()">
-                @if(style.elementType() !== "TABLE"){
+                @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
                     <tr>
                         <th>Text</th>
                         <td>
@@ -135,11 +135,35 @@
                         <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().width" (input)="style.changeElementWith()">
                     </td>
                 </tr>
-                @if(style.elementType() !== "TABLE"){
+                @if(style.elementType() === "IMG"){
+                    <tr>
+                        <th>Height</th>
+                        <td>
+                            <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().height" (input)="style.changeElementHeight()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Object Fit</th>
+                        <td>
+                            <select class="flexi-report-input" [(ngModel)]="style.elementStyle().objectFit" (change)="style.changeElementObjectFit()">
+                                @for(val of style.objectFits(); track val){
+                                    <option>{{val}}</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{selectImageText()}}</th>
+                        <td>
+                            <input class="flexi-report-input" type="file" (change)="style.selectImage($event)" />
+                        </td>
+                    </tr>
+                }
+                @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
                     <tr>
                         <th>Text Align</th>
                         <td>
-                            <select (change)="style.changeElementTextAlign()" [(ngModel)]="style.elementStyle().textAlign">
+                            <select class="flexi-report-input" (change)="style.changeElementTextAlign()" [(ngModel)]="style.elementStyle().textAlign">
                                 <option value="start">Start</option>
                                 <option value="center">Center</option>
                                 <option value="right">End</option>

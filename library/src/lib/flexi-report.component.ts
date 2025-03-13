@@ -1,6 +1,6 @@
 import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
@@ -25,7 +25,7 @@ import { FlexiTooltipDirective } from 'flexi-tooltip';
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FlexiReportComponent implements OnChanges {
+export class FlexiReportComponent implements OnChanges, AfterViewInit {
   readonly data = input<any[]>();
   readonly language = input<"en" | "tr">("en");
   readonly report = input<ReportModel>();
@@ -36,7 +36,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<string[]>([
-    "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "HR", "TABLE"
+    "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "HR", "IMG", "TABLE"
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
@@ -68,6 +68,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly newReportText = computed(() => this.language() === "en" ? "New Report" : "Yeni Rapor");
   readonly pageFontFamilyText = computed(() => this.language() === "en" ? "Font Family" : "Font Family");
   readonly showFooterText = computed(() => this.language() === "en" ? "Show Footer" : "Footer Göster");
+  readonly selectImageText = computed(() => this.language() === "en" ? "Select Image" : "Resim Seç");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -92,7 +93,15 @@ export class FlexiReportComponent implements OnChanges {
     }
   }
 
-  private attachClickListener(newElement: HTMLElement, type: string) {
+  ngAfterViewInit(): void {
+    document.addEventListener("keydown", (event: KeyboardEvent) => {
+      if (event.key === "Delete") {
+        this.deleteElement();
+      }
+    });
+  }
+
+  attachClickListener(newElement: HTMLElement, type: string) {
     this.#renderer.listen(newElement, 'click', () => {
       this.clearAllSelectedClass();
       this.#renderer.addClass(newElement, 'flexi-report-selected');
@@ -102,6 +111,8 @@ export class FlexiReportComponent implements OnChanges {
       this.style.elementStyle.set({
         text: newElement.innerText,
         width: newElement.style.width,
+        height: newElement.style.height,
+        objectFit: newElement.style.objectFit || "cover",
         textAlign: newElement.style.textAlign || "start",
         borderWidth: newElement.style.borderWidth || "0px",
         borderStyle: newElement.style.borderStyle || "unset",
@@ -154,6 +165,8 @@ export class FlexiReportComponent implements OnChanges {
       newElement = this.createParagraph();
     } else if (type === "hr") {
       newElement = this.createHr();
+    } else if (type === "img") {
+      newElement = this.createImage();
     } else if (type === "table") {
       newElement = this.createTable();
     }
@@ -199,6 +212,14 @@ export class FlexiReportComponent implements OnChanges {
     return hr;
   }
 
+  createImage() : HTMLElement {
+    const img = this.#renderer.createElement("img");
+    this.#renderer.setStyle(img, "width", "100px");
+    this.#renderer.setStyle(img, "height", "100px");
+    this.#renderer.setStyle(img, "object-fit", "cover");
+    return img;
+  }
+
   createTable(): HTMLElement {
     const table = this.#renderer.createElement("table");
     this.#renderer.setStyle(table, 'border-collapse', 'collapse');
@@ -241,6 +262,7 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   clearAllSelectedClass() {
+    this.style.selectedElement.set(null);
     const elements = this.pdfArea().nativeElement.querySelectorAll(".flexi-report-selected");
     if (elements.length === 0) return;
     elements.forEach((el: any) => {
