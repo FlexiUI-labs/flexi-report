@@ -52,7 +52,6 @@ export class FlexiReportComponent implements OnChanges {
   readonly showAIHelpQuery = signal<boolean>(false);
   readonly sqlQueryLoadingSignal = linkedSignal(() => this.sqlQueryLoading())
   readonly aiSqlQueryRequest = signal<AISqlQueryRequestModel>(new AISqlQueryRequestModel());
-  readonly sqlQuery = signal<string>("");
   readonly loadingSignal = linkedSignal(() => this.loading());
   readonly zoomValue = linkedSignal<number>(() => this.isPreview() ? 1 : 0.8);
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
@@ -67,6 +66,11 @@ export class FlexiReportComponent implements OnChanges {
   readonly showProperties = signal<boolean>(false);
   readonly showPageSettings = signal<boolean>(false);
   readonly showElements = signal<boolean>(true);
+  readonly formKeys = computed(() => Object.keys(this.reportSignal().requestElements.reduce<{ [key: string]: any }>((acc, elem) => {
+    acc[elem.name] = '';
+    return acc;
+  }, {})));
+
 
   readonly singleData = computed(() => this.processData(this.data()).singleData);
   readonly listData = computed(() => this.processData(this.data()).listData);
@@ -793,7 +797,7 @@ export class FlexiReportComponent implements OnChanges {
     this.reportSignal.update(prev => ({
       ...prev,
       content: reportContent,
-      sqlQuery: this.sqlQuery()
+      sqlQuery: this.reportSignal().sqlQuery
     }));
     this.onSave.emit(this.reportSignal());
   }
@@ -802,9 +806,6 @@ export class FlexiReportComponent implements OnChanges {
     if (!this.pdfArea() || !this.reportSignal()) return;
     if (this.reportSignal()!.content) {
       this.elementArea().nativeElement.innerHTML = this.reportSignal()!.content;
-    }
-    if (this.reportSignal()!.sqlQuery) {
-      this.sqlQuery.set(this.reportSignal().sqlQuery)
     }
 
     this.clearAllSelectedClass();
@@ -949,7 +950,7 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   addThisWorkToSqlQuery(text: string) {
-    this.sqlQuery.update(prev => prev += text);
+    this.reportSignal().sqlQuery += text;
   }
 
   async askAIForSqlQuery() {
@@ -993,7 +994,7 @@ export class FlexiReportComponent implements OnChanges {
     ));
 
     this.sqlQueryLoadingSignal.set(false);
-    this.sqlQuery.set(res.choices[0].message.content);
+    this.reportSignal().sqlQuery = res.choices[0].message.content;
   }
 
   setProperty(event: any) {
@@ -1057,7 +1058,26 @@ export class FlexiReportComponent implements OnChanges {
 
       this.onSendRequest.emit(data);
     } else if (this.reportSignal().sqlQuery) {
-      data.sqlQuery = this.reportSignal().sqlQuery;
+      let query = this.reportSignal().sqlQuery
+
+      Object.keys(form.value).forEach(key => {
+        const regex = new RegExp(`{${key}}`, 'g'); // {key} yer tutucularını bul
+        let value = form.value[key];
+
+        // Eğer değer bir string ve boş değilse, tek tırnak ekle
+        if (typeof value === 'string' && value.trim() !== '') {
+          value = `'${value}'`;
+        }
+
+        // Eğer değer boşsa NULL kullan
+        if (value === '' || value === null || value === undefined) {
+          value = 'NULL';
+        }
+
+        query = query.replace(regex, value);
+      });
+
+      data.sqlQuery = query;
 
       this.onSendRequest.emit(data);
     }
@@ -1074,6 +1094,13 @@ export class FlexiReportComponent implements OnChanges {
     this.reportSignal.update(prev => ({
       ...prev,
       requestElements: elements
+    }));
+  }
+
+  addToQuery(key: string) {
+    this.reportSignal.update(prev => ({
+      ...prev,
+      sqlQuery: prev.sqlQuery ? `${prev.sqlQuery} {${key}}` : `{${key}}`
     }));
   }
 }
