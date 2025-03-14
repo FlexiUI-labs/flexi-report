@@ -1103,4 +1103,11 @@ export class FlexiReportComponent implements OnChanges {
       sqlQuery: prev.sqlQuery ? `${prev.sqlQuery} {${key}}` : `{${key}}`
     }));
   }
+
+  onDropForTableHeads(event: CdkDragDrop<TableSettingModel[]>) {
+    const headers = [...this.tableHeads()];
+    moveItemInArray(headers, event.previousIndex, event.currentIndex);
+    this.tableHeads.set(headers);
+    this.updateTableHeads();
+  }
 }

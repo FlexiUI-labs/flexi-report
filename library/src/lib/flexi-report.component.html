@@ -152,12 +152,12 @@
     </div>
 
     <div class="flexi-report-style-part" #stylePart cdkDrag>
-        <div>
+        <div class="flexi-report-setting-close-btn">
+            <flexi-button btnSize="x-small" btnColor="dark" btnIcon="close" title="Close" (click)="closeStylePart()" />
+        </div>
+        <div style="position: relative;">
             <div class="flexi-report-setting-subtitle">
                 {{ styleSettingsText() }}
-                <div class="flexi-report-setting-close-btn">
-                    <flexi-button btnSize="x-small" btnColor="danger" btnIcon="close" title="Close" (click)="closeStylePart()" />
-                </div>
             </div>
             <div style="max-height: 500px; overflow: auto; padding-right: 25px;">
                 <table style="text-align: left; margin-bottom: 5px;" (mousedown)="$event.stopPropagation()">
@@ -377,78 +377,76 @@
                 </table>
             </div>
 
-            <div style="text-align: center; margin-top: 10px;">
-                <flexi-button btnColor="danger" btnSize="medium" btnIcon="delete" [title]="deleteElementText()" (click)="deleteElement()" />
+            <div style="position: absolute; top: 10px; left: 130px;">
+                <flexi-button btnColor="pink" btnSize="x-small" btnIcon="delete" [title]="deleteElementText()" (click)="deleteElement()" />
             </div>
         </div>
         <div>
             @if(style.elementType() === "TABLE"){
                 <div class="flexi-report-setting-subtitle">{{ tableHeadersSettingsText() }}</div>
-                <div style="max-height: 420px; overflow: auto; padding: 2px 10px">
-                    <table style="margin-bottom: 5px; text-align: left;" (mousedown)="$event.stopPropagation()">
-                        @for(head of tableHeads(); track head){
+                <div class="flexi-report-table-container" cdkDropList (cdkDropListDropped)="onDropForTableHeads($event)">
+                    <table class="flexi-report-table" (mousedown)="$event.stopPropagation()">
+                        <thead>
                             <tr>
+                                <th></th>
                                 <th>Value</th>
-                                <td>
-                                    <input class="flexi-report-input" [(ngModel)]="head.value" (input)="updateTableHeads()" />
-                                </td>
-                            </tr>
-                            <tr>
                                 <th>Width</th>
-                                <td>
-                                    <input class="flexi-report-input" [(ngModel)]="head.width" (input)="updateTableHeads()" />
-                                </td>
-                            </tr>
-                            <tr>
                                 <th>Text Align</th>
-                                <td>
-                                    <select class="flexi-report-input" (change)="updateTableHeads()" [(ngModel)]="head.textAlign">
-                                        <option value="start">Start</option>
-                                        <option value="center">Center</option>
-                                        <option value="right">End</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
                                 <th>Property</th>
-                                <td>
-                                    <select class="flexi-report-input" [(ngModel)]="head.property" (change)="updateTableHeads()">
-                                        <option value="">{{ noSelectText() }}</option>
-                                        @for(val of listProperties(); track val){
-                                        <option>{{val}}</option>
-                                        }
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
                                 <th>Format</th>
-                                <td>
-                                    <input class="flexi-report-input" [(ngModel)]="head.format" (input)="updateTableHeads()" />
-                                </td>
-                            </tr>
-                            @if(style.showFooter()){
-                                <tr>
+                                @if(style.showFooter()){
                                     <th>Footer</th>
+                                }
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for(head of tableHeads(); track head){
+                                <tr cdkDrag>
+                                    <td cdkDragHandle class="drag-handle">
+                                        <span class="material-symbols-outlined">reorder</span>
+                                    </td>
                                     <td>
-                                        <input class="flexi-report-input" [(ngModel)]="head.footerValue" (input)="updateTableHeads()" />
+                                        <input class="flexi-report-input" [(ngModel)]="head.value" (input)="updateTableHeads()" />
+                                    </td>
+                                    <td>
+                                        <input class="flexi-report-input" [(ngModel)]="head.width" (input)="updateTableHeads()" />
+                                    </td>
+                                    <td>
+                                        <select class="flexi-report-input" [(ngModel)]="head.textAlign" (change)="updateTableHeads()">
+                                            <option value="start">Start</option>
+                                            <option value="center">Center</option>
+                                            <option value="right">End</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="flexi-report-input" [(ngModel)]="head.property" (change)="updateTableHeads()">
+                                            <option value="">{{ noSelectText() }}</option>
+                                            @for(val of listProperties(); track val){
+                                                <option>{{val}}</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input class="flexi-report-input" [(ngModel)]="head.format" (input)="updateTableHeads()" />
+                                    </td>
+                                    @if(style.showFooter()){
+                                        <td>
+                                            <input class="flexi-report-input" [(ngModel)]="head.footerValue" (input)="updateTableHeads()" />
+                                        </td>
+                                    }
+                                    <td>
+                                        <flexi-button btnColor="pink" btnSize="x-small" btnIcon="delete"
+                                            [title]="deleteText()" (click)="deleteTableHead($index)" />
                                     </td>
                                 </tr>
                             }
-                            <tr>
-                                <th>#</th>
-                                <td>
-                                    <flexi-button btnColor="danger" btnSize="x-small" btnIcon="delete" [title]="deleteText()" (click)="deleteTableHead($index)"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th colspan="2">
-                                    <hr>
-                                </th>
-                            </tr>
-                        }
+                        </tbody>
                     </table>
+                    <div style="margin-top: 5px; padding-left:3px;">
+                        <flexi-button btnColor="primary" btnSize="x-small" btnIcon="add" [title]="addNewHeaderText()" (click)="addNewTableHead()" />
+                    </div>
                 </div>
-                <flexi-button btnColor="primary" btnSize="medium" btnIcon="add" [title]="addNewHeaderText()" (click)="addNewTableHead()" />
             }
         </div>
     </div>
