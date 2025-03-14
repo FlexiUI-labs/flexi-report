@@ -13,8 +13,8 @@ import { RequestModel } from '../../library/src/lib/models/request.model';
   imports: [FlexiReportComponent],
   template: `
   <flexi-report
+    [data]="data()"
       [report]="report()"
-      [data]="data()"
       [loading]="loading()"
       [openAPIKey]="openAPIKey()"
       [isPreview]="isPreview()"
