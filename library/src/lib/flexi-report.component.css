@@ -185,7 +185,7 @@
 }
 
 .flexi-report-style-part {
-    display: flex;
+    display: none;
     gap: 10px;
     cursor: pointer;
     position: absolute;

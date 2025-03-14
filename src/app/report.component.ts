@@ -48,6 +48,15 @@ export class ReportComponent {
     request: this.id,
     loader: async () => {
       var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/reports/${this.id()}`));
+      if(res.requestElements.length > 0){
+        const selects = res.requestElements.filter(p => p.type === "select");
+        selects.forEach(async(s) => {
+          if(s.endpoint){
+            var req = await lastValueFrom(this.#http.post<any[]>(s.endpoint!, {}));
+            s.data = req;
+          }
+        });
+      }
       return res;
     }
   });
@@ -61,15 +70,12 @@ export class ReportComponent {
       let res:any;
       if(request.sqlQuery){
         res = await lastValueFrom(this.#http.post<any[]>("https://localhost:7032/execute-query", request));
-        return res;
       }else if(request.endpoint){
         const endpoint = request.endpoint;
-
         res = await lastValueFrom(this.#http.post<any>(endpoint, request.params));
-        return res;
       }
 
-      return;
+      return res;
     }
   })
   readonly data = linkedSignal(() => this.dataResult.value());

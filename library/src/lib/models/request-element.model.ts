@@ -2,7 +2,9 @@ export interface RequestElementModel{
     index: number,
     label: string,
     type: string,
-    name: string
+    name: string,
+    endpoint?: string,
+    data?: {id: any, name:any}[]
 }
 
 export const initilizeRequestElementModel: RequestElementModel = {

@@ -563,7 +563,17 @@
                                     }
                                 </div>
                                 <div class="flexi-report-card-body">
-                                    <input class="flexi-report-input" [type]="element.type" [name]="element.name" [ngModel]="element.type === 'date' ? date() : ''">
+                                    @if(element.type === "text" || element.type === "date"){
+                                        <input class="flexi-report-input" [type]="element.type" [name]="element.name" [ngModel]="element.type === 'date' ? date() : ''">
+                                    }
+
+                                    @if(element.type === "select"){
+                                        <select class="flexi-report-input" [name]="element.name" ngModel>
+                                            @for(val of element.data; track val){
+                                                <option [value]="val.id">{{val.name}}</option>
+                                            }
+                                        </select>
+                                    }
                                 </div>
                             </div>
                         }
@@ -584,12 +594,17 @@
                     <label>Type</label>
                     <select class="flexi-report-input" [(ngModel)]="requestElement().type">
                         <option value="text">Text</option>
-                        <option value="number">Number</option>
                         <option value="date">Date</option>
+                        <option value="select">Select</option>
                     </select>
 
                     <label>Name</label>
                     <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().name">
+
+                    @if(requestElement().type === "select"){
+                        <label>Endpoint</label>
+                        <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().endpoint">
+                    }
 
                     <flexi-button btnColor="primary" btnSize="medium" btnIcon="add" btnText="Add Request Element" (click)="addRequestElement()" />
                 </div>

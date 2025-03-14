@@ -1050,6 +1050,8 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   sendRequest(form: NgForm) {
+    console.log(form.value);
+
     let data: RequestModel = new RequestModel();
 
     if (this.reportSignal().endpoint) {
@@ -1061,15 +1063,13 @@ export class FlexiReportComponent implements OnChanges {
       let query = this.reportSignal().sqlQuery
 
       Object.keys(form.value).forEach(key => {
-        const regex = new RegExp(`{${key}}`, 'g'); // {key} yer tutucularını bul
+        const regex = new RegExp(`{${key}}`, 'g');
         let value = form.value[key];
 
-        // Eğer değer bir string ve boş değilse, tek tırnak ekle
         if (typeof value === 'string' && value.trim() !== '') {
           value = `'${value}'`;
         }
 
-        // Eğer değer boşsa NULL kullan
         if (value === '' || value === null || value === undefined) {
           value = 'NULL';
         }
