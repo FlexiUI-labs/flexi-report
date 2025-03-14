@@ -173,7 +173,7 @@
             </div>
             <div style="max-height: 500px; overflow: auto; padding-right: 25px;">
                 <table style="text-align: left; margin-bottom: 5px;" (mousedown)="$event.stopPropagation()">
-                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
+                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG" && style.elementType() !== "DIV"){
                         <tr>
                             <th>Text</th>
                             <td>
@@ -187,6 +187,20 @@
                             <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().width" (input)="style.changeElementWith()">
                         </td>
                     </tr>
+                    @if(style.elementType() === "DIV"){
+                        <tr>
+                            <th>Height</th>
+                            <td>
+                                <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().height" (input)="style.changeElementHeight()">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Background Color</th>
+                            <td>
+                              <input class="flexi-report-input" type="color" [(ngModel)]="style.elementStyle().backgroundColor" (input)="style.changeElementBackgroundColor()" />
+                            </td>
+                        </tr>
+                    }
                     @if(style.elementType() === "IMG"){
                         <tr>
                             <th>Height</th>
@@ -211,7 +225,7 @@
                             </td>
                         </tr>
                     }
-                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
+                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG" && style.elementType() !== "DIV"){
                         <tr>
                             <th>Text Align</th>
                             <td>
@@ -309,17 +323,19 @@
                               <input class="flexi-report-input" type="text" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
                             </td>
                         </tr>
-                        <tr>
-                            <th>Poperty</th>
-                            <td>
-                                <select class="flexi-report-input" [(ngModel)]="style.elementStyle().property" (change)="setProperty($event)">
-                                    <option value="">{{ noSelectText() }}</option>
-                                    @for(val of singleProperties(); track val){
-                                    <option>{{val}}</option>
-                                    }
-                                </select>
-                            </td>
-                        </tr>
+                        @if(style.elementType() !== "DIV"){
+                            <tr>
+                                <th>Poperty</th>
+                                <td>
+                                    <select class="flexi-report-input" [(ngModel)]="style.elementStyle().property" (change)="setProperty($event)">
+                                        <option value="">{{ noSelectText() }}</option>
+                                        @for(val of singleProperties(); track val){
+                                        <option>{{val}}</option>
+                                        }
+                                    </select>
+                                </td>
+                            </tr>
+                        }
                     }
 
                     @if(style.elementType() === "TABLE"){

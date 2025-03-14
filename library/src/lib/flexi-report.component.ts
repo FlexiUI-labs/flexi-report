@@ -59,7 +59,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<string[]>([
-    "H1", "SPAN", "P", "HR", "IMG", "TABLE"
+    "DIV", "H1", "SPAN", "HR", "IMG", "TABLE"
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
@@ -72,7 +72,6 @@ export class FlexiReportComponent implements OnChanges {
     acc[elem.name] = '';
     return acc;
   }, {})));
-
 
   readonly singleData = computed(() => this.processData(this.data()).singleData);
   readonly listData = computed(() => this.processData(this.data()).listData);
@@ -231,8 +230,8 @@ export class FlexiReportComponent implements OnChanges {
       newElement = this.createHeading(type);
     } else if (type === "span") {
       newElement = this.createSpan();
-    } else if (type === "p") {
-      newElement = this.createParagraph();
+    } else if (type === "div") {
+      newElement = this.createDiv();
     } else if (type === "hr") {
       newElement = this.createHr();
     } else if (type === "img") {
@@ -270,12 +269,15 @@ export class FlexiReportComponent implements OnChanges {
     return span;
   }
 
-  createParagraph(): HTMLElement {
-    const span = this.#renderer.createElement("p");
-    const text = this.#renderer.createText("paragraph");
-    this.#renderer.appendChild(span, text);
-    this.#renderer.setStyle(span, 'display', 'inline-block');
-    return span;
+  createDiv(): HTMLElement {
+    const div = this.#renderer.createElement("div");
+    this.#renderer.setStyle(div, 'display', 'block');
+    this.#renderer.setStyle(div, 'width', '100px');
+    this.#renderer.setStyle(div, 'height', '150px');
+    this.#renderer.setStyle(div, 'backgroundColor', '#2C3E50');
+    this.#renderer.setStyle(div, 'position', 'absolute');
+    this.#renderer.setStyle(div, 'z-index', '0');
+    return div;
   }
 
   createHr(): HTMLElement {
