@@ -113,6 +113,7 @@
                     <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
                     <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
                     <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
+                    <flexi-button btnColor="pink" [title]="openSqlQueryPartText()" flexiTooltip="top" btnIcon="query_stats" (click)="openSqlQueryPart()" />
                 }
                 @if(!isPreview() && reportSignal().id){
                     <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(reportSignal().id)" />
@@ -128,12 +129,7 @@
             <div style="border: 1px solid; position: relative; overflow: auto; width: 100%; border-radius: 10px;" [style.width]="pageSetting().width"
                 [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
                     @if(loadingSignal()){
-                        <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px;">
-                            <div class="flexi-report-spinner-container">
-                                <div class="flexi-report-spinner-1"></div>
-                                <div class="flexi-report-spinner-2"></div>
-                            </div>
-                        </div>
+                        <flexi-report-loading />
                     }
                   <div #pdfArea>
                     <div #elementArea></div>
@@ -441,6 +437,54 @@
         </div>
         <div style="margin-top: 50px; height: 500px; overflow: auto; padding: 10px; cursor: auto;" (mousedown)="$event.stopPropagation()">
             <ngx-json-viewer [json]="data()" (mousedown)="$event.stopPropagation()"/>
+        </div>
+    </div>
+
+    <div class="flexi-report-sql-query" #sqlQueryPart cdkDrag>
+        <div style="position: relative;">
+            <div>
+                <div class="flexi-report-setting-close-btn">
+                    <flexi-button btnSize="x-small" btnColor="danger" btnIcon="close" title="Close" (click)="closeSqlQueryPart()" />
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 50px; height: 85%; overflow: auto; padding: 10px; cursor: auto;" (mousedown)="$event.stopPropagation()">
+            @if(sqlQueryLoadingSignal()){
+                <flexi-report-loading />
+            }
+            <div style="display: flex; gap: 5px;">
+                <div style="width: 250px; border: 1px solid; max-height: 59vh; overflow: auto;">
+                    @for(table of tablesData(); track table){
+                        <ul>
+                            <span>{{table.tableName}}</span>
+                            @for(column of table.columns; track column){
+                                <li>{{column}}</li>
+                            }
+                        </ul>
+                    }
+                </div>
+                <div style="width: 100%; position: relative;">
+                    <div class="flexi-report-sql-editor-container">
+                        <textarea class="flexi-report-sql-textarea" spellcheck="false" [(ngModel)]="sqlQuery" name="sqlQuery"></textarea>
+                    </div>
+                    <div style="text-align: right; margin-bottom: 5px; position: absolute; top: 10px; right: 10px;">
+                        <flexi-button btnColor="primary" btnIcon="send" btnText="Execute" (click)="onExecute.emit(sqlQuery())" />
+                    </div>
+                    <div>
+                        <flexi-grid
+                        [data]="data() || []"
+                        [pageSize]="5"
+                        [useMinHeight]="false"
+                        [showFilterPanel]="false">
+                            @for(property of properties(); track property){
+                                @if(property !== "index"){
+                                    <flexi-grid-column [field]="property" />
+                                }
+                            }
+                        </flexi-grid>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

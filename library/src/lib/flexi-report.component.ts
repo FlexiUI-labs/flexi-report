@@ -10,6 +10,8 @@ import { ReportModel } from './models/report.model';
 import { RouterLink } from '@angular/router';
 import { FlexiTooltipDirective } from 'flexi-tooltip';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
+import { FlexiGridModule } from 'flexi-grid';
+import { FlexiReportLoadingComponent } from './flexi-report-loading/flexi-report-loading.component';
 
 @Component({
   selector: 'flexi-report',
@@ -20,7 +22,9 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
     FlexiButtonComponent,
     FlexiTooltipDirective,
     RouterLink,
-    NgxJsonViewerModule
+    NgxJsonViewerModule,
+    FlexiGridModule,
+    FlexiReportLoadingComponent
   ],
   templateUrl: "flexi-report.component.html",
   styleUrl: `flexi-report.component.css`,
@@ -34,7 +38,10 @@ export class FlexiReportComponent implements OnChanges {
   readonly editPath = input<string>();
   readonly isPreview = input<boolean>(false);
   readonly loading = input<boolean>(false);
+  readonly sqlQueryLoadingSignal = input<boolean>(false);
+  readonly tablesData = input<any[]>();
 
+  readonly sqlQuery = signal<string>("");
   readonly loadingSignal = linkedSignal(() => this.loading());
   readonly dataString = computed(() => JSON.stringify(this.data()) ?? "");
   readonly zoomValue = linkedSignal<number>(() => this.isPreview() ? 1 : 0.8);
@@ -76,16 +83,19 @@ export class FlexiReportComponent implements OnChanges {
   readonly selectImageText = computed(() => this.language() === "en" ? "Select Image" : "Resim Seç");
   readonly showDataResultText = computed(() => this.language() === "en" ? "Show Data Result" : "Data Resultu Göster");
   readonly printText = computed(() => this.language() === "en" ? "Print" : "Yazdır");
+  readonly openSqlQueryPartText = computed(() => this.language() === "en" ? "Open Sql Query Part" : "Sql Query Parçasını Aç");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
   readonly stylePart = viewChild.required<ElementRef>("stylePart");
   readonly dataResultPart = viewChild.required<ElementRef>("dataResultPart");
+  readonly sqlQueryPart = viewChild.required<ElementRef>("sqlQueryPart");
 
   readonly onSave = output<any>();
   readonly onNewReport = output<void>();
   readonly onDelete = output<any>();
   readonly onEndpointChange = output<string>();
+  readonly onExecute = output<string>();
 
   readonly #renderer = inject(Renderer2);
   readonly #dragDrop = inject(DragDrop);
@@ -332,7 +342,7 @@ export class FlexiReportComponent implements OnChanges {
       tbody.querySelectorAll(".remove-after").forEach((el: any) => el.remove());
 
       let tfoot = table.querySelector("tfoot") as HTMLElement;
-      const tfootTH = tfoot.querySelector("tfoot th") as HTMLElement;
+      const tfootTH = tfoot?.querySelector("tfoot th") as HTMLElement;
       if (tfoot) {
         tfoot.remove();
       }
@@ -803,6 +813,14 @@ export class FlexiReportComponent implements OnChanges {
 
   closeDataResultPart(){
     this.dataResultPart().nativeElement.style.display = "none";
+  }
+
+  openSqlQueryPart(){
+    this.sqlQueryPart().nativeElement.style.display = "block";
+  }
+
+  closeSqlQueryPart(){
+    this.sqlQueryPart().nativeElement.style.display = "none";
   }
 
   print() {

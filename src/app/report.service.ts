@@ -10,7 +10,7 @@ export class ReportService {
   readonly reports = computed(() => this.reportResult.value() ?? []);
   readonly reportResult = resource({
     loader: async () => {
-      var res = await lastValueFrom(this.http.get<ReportModel[]>(`https://localhost:7032`));
+      var res = await lastValueFrom(this.http.get<ReportModel[]>(`https://localhost:7032/reports`));
       return res;
     }
   });

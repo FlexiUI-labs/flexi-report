@@ -21,6 +21,9 @@ import { FlexiToastService } from 'flexi-toast';
       (onNewReport)="onNewReport()"
       (onDelete)="onDelete($event)"
       (onEndpointChange)="onEndpointChange($event)"
+      (onExecute)="onExecute($event)"
+      [sqlQueryLoadingSignal]="sqlQueryLoadingSignal()"
+      [tablesData]="tablesData()"
       />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +34,7 @@ export class ReportComponent {
   readonly editPath = computed(() => `/report/edit/${this.id()}`);
   readonly type = signal<string>("");
   readonly endpoint = linkedSignal(() => this.reportResult.value()?.endpoint ?? "")
+  readonly sqlQueryLoadingSignal = signal<boolean>(false);
 
   readonly isPreview = computed(() => {
     if(!this.id()) return false;
@@ -42,7 +46,7 @@ export class ReportComponent {
   readonly reportResult = resource({
     request: this.id,
     loader: async () => {
-      var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/${this.id()}`));
+      var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/reports/${this.id()}`));
       return res;
     }
   });
@@ -57,8 +61,16 @@ export class ReportComponent {
       return res;
     }
   })
-  readonly data = computed(() => this.result.value() ?? []);
+  readonly data = linkedSignal(() => this.result.value() ?? []);
   readonly loading = computed(() => this.result.isLoading());
+
+  readonly tablesResult = resource({
+    loader: async ()=> {
+      var res = await lastValueFrom(this.#http.get<any[]>("https://localhost:7032/database-schema"));
+      return res;
+    }
+  })
+  readonly tablesData = computed(() => this.tablesResult.value() || []);
 
   readonly #http = inject(HttpClient);
   readonly #activated = inject(ActivatedRoute);
@@ -74,7 +86,7 @@ export class ReportComponent {
   }
 
   onSave(report:any){
-    this.#http.post("https://localhost:7032",report).subscribe((res:any) => {
+    this.#http.post("https://localhost:7032/reports",report).subscribe((res:any) => {
       report.id = res.id;
       this.report.set(report);
       this.#report.reportResult.reload();
@@ -87,7 +99,7 @@ export class ReportComponent {
   }
 
   onDelete(id:string){
-    this.#http.delete(`https://localhost:7032/${id}`).subscribe(() => {
+    this.#http.delete(`https://localhost:7032/reports/${id}`).subscribe(() => {
       this.#report.reportResult.reload();
       this.#router.navigateByUrl("/report/edit");
       this.#toast.showToast("Success","Rapor delete was successful","info");
@@ -96,5 +108,21 @@ export class ReportComponent {
 
   onEndpointChange(endpoint: string){
     this.endpoint.set(endpoint);
+  }
+
+  onExecute(sqlQuery:string){
+    const data = {
+      sqlQuery: sqlQuery
+    }
+    this.sqlQueryLoadingSignal.set(true);
+    this.#http.post<any[]>("https://localhost:7032/execute-query", data).subscribe({
+      next: res => {
+        this.data.set(res);
+        this.sqlQueryLoadingSignal.set(false);
+      },
+      error: ()=> {
+        this.sqlQueryLoadingSignal.set(false);
+      }
+    });
   }
 }
