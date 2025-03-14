@@ -88,9 +88,9 @@
                         <div [ngClass]="showElements() ? 'flexi-report-show' : 'flexi-report-hide'">
                             <ul class="flexi-report-ul">
                                 @for(el of elements(); track el){
-                                <li (click)="addElement(el)">
+                                <li (click)="addElement(el.name)">
                                     <div class="flexi-report-cursor flexi-report-hover flexi-report-p-1">
-                                        {{el}}
+                                        {{el.title}}
                                     </div>
                                 </li>
                                 }
@@ -169,7 +169,7 @@
         </div>
         <div style="position: relative;">
             <div class="flexi-report-setting-subtitle">
-                {{ styleSettingsText() }}
+                {{ style.elementType() }} {{ styleSettingsText() }}
             </div>
             <div style="max-height: 500px; overflow: auto; padding-right: 25px;">
                 <table style="text-align: left; margin-bottom: 5px;" (mousedown)="$event.stopPropagation()">
@@ -405,7 +405,7 @@
                 </table>
             </div>
 
-            <div style="position: absolute; top: 10px; left: 130px;">
+            <div style="position: absolute; top: 10px; left: 150px;">
                 <flexi-button btnColor="pink" btnSize="x-small" btnIcon="delete" [title]="deleteElementText()" (click)="deleteElement()" />
             </div>
         </div>

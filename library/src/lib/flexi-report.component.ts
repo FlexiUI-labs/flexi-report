@@ -19,6 +19,7 @@ import { initilizeRequestElementModel, RequestElementModel } from './models/requ
 import { RequestModel } from './models/request.model';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { ElementModel } from '../public-api';
 
 @Component({
   selector: 'flexi-report',
@@ -58,8 +59,15 @@ export class FlexiReportComponent implements OnChanges {
   readonly zoomValue = linkedSignal<number>(() => this.isPreview() ? 1 : 0.8);
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
-  readonly elements = signal<string[]>([
-    "DIV", "H1", "SPAN", "HR", "IMG", "TABLE"
+  readonly elements = signal<ElementModel[]>([
+    {name: "div", title: "DIV"},
+    {name: "h1", title: "HEAD"},
+    {name: "span", title: "SPAN"},
+    {name: "horizontal-line", title: "HORIZONTAL LINE"},
+    {name: "vertical-line", title: "VERTICAL LINE"},
+    {name: "hr", title: "HR"},
+    {name: "img", title: "IMG"},
+    {name: "table", title: "TABLE"}
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
@@ -222,8 +230,6 @@ export class FlexiReportComponent implements OnChanges {
 
   addElement(type: string) {
     if (!this.elementArea()) return;
-
-    type = type.toLowerCase();
     let newElement: HTMLElement | null = null;
 
     if (type == "h1") {
@@ -232,6 +238,10 @@ export class FlexiReportComponent implements OnChanges {
       newElement = this.createSpan();
     } else if (type === "div") {
       newElement = this.createDiv();
+    } else if (type === "horizontal-line") {
+      newElement = this.createLine("horizontal");
+    } else if (type === "vertical-line") {
+      newElement = this.createLine("vertical");
     } else if (type === "hr") {
       newElement = this.createHr();
     } else if (type === "img") {
@@ -279,6 +289,25 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setStyle(div, 'z-index', '0');
     return div;
   }
+
+  createLine(orientation: 'horizontal' | 'vertical'): HTMLElement {
+    const line = this.#renderer.createElement("div");
+    this.#renderer.setStyle(line, 'position', 'absolute');
+    this.#renderer.setStyle(line, 'backgroundColor', '#000'); // Siyah çizgi
+    this.#renderer.setStyle(line, 'cursor', 'move'); // Taşınabilir
+    this.#renderer.addClass(line, 'draggable'); // Sürükleme için
+
+    if (orientation === 'horizontal') {
+        this.#renderer.setStyle(line, 'width', '100px');
+        this.#renderer.setStyle(line, 'height', '2px'); // İnce çizgi
+    } else {
+        this.#renderer.setStyle(line, 'width', '2px'); // İnce çizgi
+        this.#renderer.setStyle(line, 'height', '100px');
+    }
+
+    this.attachClickListener(line, 'line');
+    return line;
+}
 
   createHr(): HTMLElement {
     const hr = this.#renderer.createElement("hr");
