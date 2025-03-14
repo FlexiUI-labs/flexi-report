@@ -18,7 +18,7 @@
                     <div [ngClass]="showProperties() ? 'flexi-report-show' : 'flexi-report-hide'">
                         <div>
                             <strong class="flexi-report-properties-strong">{{ endpointText() }}</strong>
-                            <input class="flexi-report-input" style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint" (change)="onEndpointChange.emit(reportSignal().endpoint)">
+                            <input class="flexi-report-input" style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint" (change)="sendRequest(form)">
                         </div>
                         <div style="margin-top: 5px;">
                             <strong class="flexi-report-properties-strong">{{ reportTitleText() }}</strong>
@@ -117,7 +117,12 @@
                     <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(reportSignal().id)" />
                 }
                 @if(data()){
-                    <flexi-button btnColor="indigo" [title]="showDataResultText()" flexiTooltip="top" btnIcon="lan" (click)="openDataResultPart()" />
+                    <flexi-button btnColor="indigo" [title]="showDataResultText()" flexiTooltip="top" btnIcon="data_object" (click)="openDataResultPart()" />
+                }
+                @if((isPreview() && reportSignal().requestElements.length > 0) || !isPreview()){
+                    <flexi-button btnColor="secondary" [title]="openRequestParamsText()" flexiTooltip="top" btnIcon="search" (click)="openRequestElementPart()" />
+                }@else {
+                    <flexi-button btnColor="secondary" [title]="getReportText()" flexiTooltip="top" btnIcon="search" (click)="sendRequest(form)" />
                 }
                 <flexi-button btnColor="success" [title]="donwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
                 <flexi-button btnColor="dark" [title]="printText()" flexiTooltip="top" btnIcon="print" (click)="print()" />
@@ -503,7 +508,7 @@
                     <div class="flexi-report-sql-editor-container">
                         <textarea class="flexi-report-sql-textarea" spellcheck="false" [(ngModel)]="sqlQuery" rows="8" name="sqlQuery" placeholder="SELECT * FROM"></textarea>
                         <div style="text-align: right; margin-bottom: 5px; position: absolute; bottom: 30px; right: 50px; z-index: 1;">
-                            <flexi-button btnColor="primary" btnIcon="send" btnText="Execute" (click)="onExecute.emit(sqlQuery())" />
+                            <flexi-button btnColor="primary" btnIcon="send" btnText="Execute" (click)="sendRequest(form)" />
                         </div>
                     </div>
                     <div>
@@ -524,4 +529,57 @@
         </div>
     </div>
 
+    <div class="flexi-report-request-element" #requestElementPart cdkDrag [style.width]="isPreview() ? '400px' : '700px'">
+        <div class="flexi-report-request-header">
+            <span>{{requestFormsText()}}</span>
+            <div class="flexi-report-setting-close-btn">
+                <flexi-button btnSize="x-small" btnColor="danger" btnIcon="close" title="Close" (click)="closeRequestElementPart()" />
+            </div>
+        </div>
+
+        <div class="flexi-report-request-content" (mousedown)="$event.stopPropagation()">
+            <div class="flexi-report-request-list">
+                @if(reportSignal().requestElements.length === 0){
+                    <p class="empty-text">{{noRequestElementsText()}}</p>
+                }
+                <form #form="ngForm" autocomplete="off" (ngSubmit)="sendRequest(form)">
+                    <ul>
+                        @for(element of reportSignal().requestElements; track element){
+                            <li>
+                                <div style="display: flex; gap: 5px; padding: 5px; align-items: center;">
+                                    <label style="width: 100%;">{{element.label}}</label>
+                                    <input class="flexi-report-input" [type]="element.type" [name]="element.name" [ngModel]="element.type === 'date' ? date() : ''">
+                                </div>
+                                @if(!isPreview()){
+                                    <flexi-button btnSize="x-small" btnColor="danger" btnIcon="delete" (click)="removeRequestElement(element.name)" />
+                                }
+                            </li>
+                        }
+                    </ul>
+                    <div style="text-align: center; margin-top: 5px;">
+                        <flexi-button btnType="submit" btnColor="success" btnIcon="search" />
+                    </div>
+                </form>
+            </div>
+
+            @if(!isPreview()){
+                <div class="flexi-report-request-form">
+                    <label>Label</label>
+                    <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().label">
+
+                    <label>Type</label>
+                    <select class="flexi-report-input" [(ngModel)]="requestElement().type">
+                        <option value="text">Text</option>
+                        <option value="number">Number</option>
+                        <option value="date">Date</option>
+                    </select>
+
+                    <label>Name</label>
+                    <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().name">
+
+                    <flexi-button btnColor="primary" btnSize="medium" btnIcon="add" btnText="Add Request Element" (click)="addRequestElement()" />
+                </div>
+            }
+        </div>
+    </div>
 </div>

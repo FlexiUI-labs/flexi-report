@@ -6,6 +6,7 @@ import { ReportModel } from '../../library/src/lib/models/report.model';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReportService } from './report.service';
 import { FlexiToastService } from 'flexi-toast';
+import { RequestModel } from '../../library/src/lib/models/request.model';
 
 @Component({
   selector: 'app-report',
@@ -23,8 +24,7 @@ import { FlexiToastService } from 'flexi-toast';
       (onSave)="onSave($event)"
       (onNewReport)="onNewReport()"
       (onDelete)="onDelete($event)"
-      (onEndpointChange)="onEndpointChange($event)"
-      (onExecute)="onExecute($event)"
+      (onSendRequest)="onExecute($event)"
       />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,9 +34,8 @@ export class ReportComponent {
   readonly id = signal<string | undefined | null>(undefined);
   readonly editPath = computed(() => `/report/edit/${this.id()}`);
   readonly type = signal<string>("");
-  readonly endpoint = linkedSignal(() => this.reportResult.value()?.endpoint ?? "");
-  readonly sqlQuery = linkedSignal(() => this.reportResult.value()?.sqlQuery ?? "");
   readonly openAPIKey = signal<string>("");
+  readonly request = signal<RequestModel>(new RequestModel());
 
   readonly isPreview = computed(() => {
     if(!this.id()) return false;
@@ -56,36 +55,36 @@ export class ReportComponent {
   readonly report = linkedSignal(() => this.reportResult.value() ?? new ReportModel());
   readonly reportLoading = computed(() => this.reportResult.isLoading());
 
-  readonly result = resource({
-    request: this.endpoint,
-    loader: async ({request}) => {
-      var res = await lastValueFrom(this.#http.get<any>(request));
-      return res;
+  readonly dataResult = resource({
+    request: this.request,
+    loader: async({request}) => {
+      let res:any;
+      if(request.sqlQuery){
+        res = await lastValueFrom(this.#http.post<any[]>("https://localhost:7032/execute-query", request));
+        return res;
+      }else if(request.endpoint){
+        const endpoint = request.endpoint;
+
+        res = await lastValueFrom(this.#http.post<any>(endpoint, request.params));
+        return res;
+      }
+
+      return;
     }
   })
-  readonly data = linkedSignal(() => this.result.value() || this.sqlQueryResult.value() || []);
-  readonly loading = computed(() => this.result.isLoading());
+  readonly data = linkedSignal(() => this.dataResult.value());
+  readonly loading = computed(() => this.dataResult.isLoading());
+  readonly sqlQueryLoadingSignal = linkedSignal(() => this.request().sqlQuery ? this.dataResult.isLoading() : false);
 
   readonly tablesResult = resource({
-    loader: async ()=> {
+    request: this.type,
+    loader: async ({request})=> {
+      if(request === "preview") return;
       var res = await lastValueFrom(this.#http.get<any[]>("https://localhost:7032/database-schema"));
       return res;
     }
   })
   readonly tablesData = computed(() => this.tablesResult.value() || []);
-
-  readonly sqlQueryResult = resource({
-    request: ()=> this.sqlQuery(),
-    loader: async ({request}) => {
-      if(!request) return;
-      const data = {
-        sqlQuery: this.sqlQuery()
-      }
-      var res = await lastValueFrom(this.#http.post<any[]>("https://localhost:7032/execute-query", data));
-      return res;
-    }
-  })
-  readonly sqlQueryLoadingSignal = linkedSignal(() => this.sqlQueryResult.isLoading());
 
   readonly #http = inject(HttpClient);
   readonly #activated = inject(ActivatedRoute);
@@ -101,8 +100,8 @@ export class ReportComponent {
   }
 
   onSave(report:any){
-    this.#http.post("https://localhost:7032/reports",report).subscribe((res:any) => {
-      report.id = res.id;
+    this.#http.post<any>("https://localhost:7032/reports",report).subscribe((res:any) => {
+      report.id = res.data;
       this.report.set(report);
       this.#report.reportResult.reload();
       this.#toast.showToast("Success","Rapor create was successful","success");
@@ -121,11 +120,7 @@ export class ReportComponent {
     });
   }
 
-  onEndpointChange(endpoint: string){
-    this.endpoint.set(endpoint);
-  }
-
-  onExecute(sqlQuery:string){
-    this.sqlQuery.set(sqlQuery);
+  onExecute(data:any){
+    this.request.set(data);
   }
 }

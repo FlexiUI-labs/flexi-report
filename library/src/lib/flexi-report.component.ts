@@ -1,7 +1,7 @@
 import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
 import { TableSettingModel } from './models/table-setting.model';
@@ -15,6 +15,8 @@ import { FlexiReportLoadingComponent } from './flexi-report-loading/flexi-report
 import { AISqlQueryRequestModel } from './models/ai-sql-query-request.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+import { initilizeRequestElementModel, RequestElementModel } from './models/request-element.model';
+import { RequestModel } from './models/request.model';
 
 @Component({
   selector: 'flexi-report',
@@ -45,6 +47,8 @@ export class FlexiReportComponent implements OnChanges {
   readonly tablesData = input<any[]>();
   readonly openAPIKey = input<string>();
 
+  readonly date = signal<string>(this.getNowDate());
+  readonly requestElement = signal<RequestElementModel>(initilizeRequestElementModel);
   readonly showAIHelpQuery = signal<boolean>(false);
   readonly sqlQueryLoadingSignal = linkedSignal(() => this.sqlQueryLoading())
   readonly aiSqlQueryRequest = signal<AISqlQueryRequestModel>(new AISqlQueryRequestModel());
@@ -93,18 +97,22 @@ export class FlexiReportComponent implements OnChanges {
   readonly showDataResultText = computed(() => this.language() === "en" ? "Show Data Result" : "Data Resultu Göster");
   readonly printText = computed(() => this.language() === "en" ? "Print" : "Yazdır");
   readonly openSqlQueryPartText = computed(() => this.language() === "en" ? "Open Sql Query Part" : "Sql Query Parçasını Aç");
+  readonly requestFormsText = computed(() => this.language() === "en" ? "Request Forms" : "İstek Formu");
+  readonly noRequestElementsText = computed(() => this.language() === "en" ? "No request elements added" : "İstek için eklenen bir element yok");
+  readonly openRequestParamsText = computed(() => this.language() === "en" ? "Open request params form" : "İstek formunu aç");
+  readonly getReportText = computed(() => this.language() === "en" ? "Get Report" : "Raporu Getir");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
   readonly stylePart = viewChild.required<ElementRef>("stylePart");
   readonly dataResultPart = viewChild.required<ElementRef>("dataResultPart");
   readonly sqlQueryPart = viewChild.required<ElementRef>("sqlQueryPart");
+  readonly requestElementPart = viewChild.required<ElementRef>("requestElementPart");
 
   readonly onSave = output<any>();
   readonly onNewReport = output<void>();
   readonly onDelete = output<any>();
-  readonly onEndpointChange = output<string>();
-  readonly onExecute = output<string>();
+  readonly onSendRequest = output<any>();
 
   readonly #renderer = inject(Renderer2);
   readonly #dragDrop = inject(DragDrop);
@@ -119,6 +127,19 @@ export class FlexiReportComponent implements OnChanges {
       if (!this.isPreview()) this.restoreDragFeature();
       else this.preview();
     }
+  }
+
+  getNowDate() {
+    let day = new Date().getDate().toString();
+    if(day.length === 1) day = "0" + day;
+
+    let month = (new Date().getMonth() + 1).toString();
+    if (month.length === 1) month = "0" + month;
+
+    const year = new Date().getFullYear().toString();
+
+    const date = year + "-" + month + "-" + day;
+    return date;
   }
 
   processData(data: any) {
@@ -350,21 +371,19 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   preview() {
-    if(this.singleData()){
+    if (this.singleData()) {
       const els = this.pdfArea().nativeElement.querySelectorAll("[data-property]");
-      els.forEach((el:HTMLElement) => {
+      els.forEach((el: HTMLElement) => {
         const property = el.getAttribute("data-property") || "";
         const value = el.innerText;
-        if(property){
+        if (property) {
           el.innerText = this.singleData()[property];
           el.setAttribute("data-value", value);
         }
       });
     }
 
-    if(this.listData().length > 0){
-      this.prepareTableBind();
-    }
+    this.prepareTableBind();
   }
 
   prepareTableBind() {
@@ -987,9 +1006,47 @@ export class FlexiReportComponent implements OnChanges {
     }
   }
 
-  findFilterType(val:any): FilterType{
-    const type =typeof(val);
-    if(type === "number") return "number";
+  findFilterType(val: any): FilterType {
+    const type = typeof (val);
+    if (type === "number") return "number";
     return "text";
+  }
+
+  addRequestElement() {
+    this.reportSignal().requestElements.push({ ...this.requestElement() });
+    this.requestElement.set(initilizeRequestElementModel);
+  }
+
+  removeRequestElement(name: string) {
+    const elements = [...this.reportSignal().requestElements.filter(p => p.name !== name)];
+    this.reportSignal.update(prev => ({
+      ...prev,
+      requestElements: elements
+    }));
+  }
+
+  openRequestElementPart() {
+    this.requestElementPart().nativeElement.style.display = "block";
+  }
+
+  closeRequestElementPart() {
+    this.requestElementPart().nativeElement.style.display = "none";
+  }
+
+  sendRequest(form: NgForm) {
+    let data: RequestModel = new RequestModel();
+
+    if (this.reportSignal().endpoint) {
+      data.endpoint = this.reportSignal().endpoint;
+      data.params = form.value;
+
+      this.onSendRequest.emit(data);
+    } else if (this.reportSignal().sqlQuery) {
+      data.sqlQuery = this.reportSignal().sqlQuery;
+
+      this.onSendRequest.emit(data);
+    }
+
+    this.closeRequestElementPart();
   }
 }

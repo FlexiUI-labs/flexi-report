@@ -1,3 +1,5 @@
+import { RequestElementModel } from "./request-element.model";
+
 export class ReportModel{
     id: string | null = null;
     content: string = "";
@@ -8,4 +10,5 @@ export class ReportModel{
     pageOrientation: "landscape" | "portrait" = "portrait";
     fontFamily: string = "Roboto";
     sqlQuery: string = "";
+    requestElements: RequestElementModel[] = [];
 }
