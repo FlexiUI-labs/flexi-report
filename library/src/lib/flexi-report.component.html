@@ -128,8 +128,14 @@
         <div [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">
             <div style="border: 1px solid; position: relative; overflow: auto; width: 100%; border-radius: 10px;" [style.width]="pageSetting().width"
                 [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
-                    @if(loadingSignal()){
-                        <flexi-report-loading />
+                    @if(isPreview()){
+                        @if(loadingSignal() || sqlQueryLoadingSignal()){
+                            <flexi-report-loading />
+                        }
+                    }@else{
+                        @if(loadingSignal()){
+                            <flexi-report-loading />
+                        }
                     }
                   <div #pdfArea>
                     <div #elementArea></div>
@@ -453,14 +459,16 @@
                 <flexi-report-loading />
             }
             <div style="display: flex; gap: 5px;">
-                <div style="width: 250px; border: 1px solid; max-height: 59vh; overflow: auto;">
+                <div class="flexi-report-tables-container">
                     @for(table of tablesData(); track table){
-                        <ul>
-                            <span>{{table.tableName}}</span>
-                            @for(column of table.columns; track column){
-                                <li>{{column}}</li>
-                            }
+                      <div class="flexi-report-table-group">
+                        <div class="flexi-report-table-name" (click)="addThisWorkToSqlQuery(table.tableName)">{{table.tableName}}</div>
+                        <ul class="flexi-report-columns-list">
+                          @for(column of table.columns; track column){
+                            <li (click)="addThisWorkToSqlQuery(column)">{{column}}</li>
+                          }
                         </ul>
+                      </div>
                     }
                 </div>
                 <div style="width: 100%; position: relative;">

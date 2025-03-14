@@ -695,7 +695,8 @@ export class FlexiReportComponent implements OnChanges {
     const reportContent = this.elementArea().nativeElement.innerHTML;
     this.reportSignal.update(prev => ({
       ...prev,
-      content: reportContent
+      content: reportContent,
+      sqlQuery: this.sqlQuery()
     }));
     this.onSave.emit(this.reportSignal());
   }
@@ -704,6 +705,9 @@ export class FlexiReportComponent implements OnChanges {
     if (!this.pdfArea() || !this.reportSignal()) return;
     if (this.reportSignal()!.content) {
       this.elementArea().nativeElement.innerHTML = this.reportSignal()!.content;
+    }
+    if(this.reportSignal()!.sqlQuery){
+      this.sqlQuery.set(this.reportSignal().sqlQuery)
     }
 
     this.clearAllSelectedClass();
@@ -845,5 +849,9 @@ export class FlexiReportComponent implements OnChanges {
     printWindow!.document.close();
     printWindow!.print();
     printWindow!.close();
+  }
+
+  addThisWorkToSqlQuery(text:string){
+    this.sqlQuery.update(prev => prev += text);
   }
 }

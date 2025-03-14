@@ -7,4 +7,5 @@ export class ReportModel{
     pageSize: string = "a4";
     pageOrientation: "landscape" | "portrait" = "portrait";
     fontFamily: string = "Roboto";
+    sqlQuery: string = "";
 }

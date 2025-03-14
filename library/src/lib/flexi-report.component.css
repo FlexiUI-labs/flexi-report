@@ -171,7 +171,7 @@
     overflow: auto;
 }
 
-.flexi-report-sql-query{
+.flexi-report-sql-query {
     display: none;
     cursor: pointer;
     position: absolute;
@@ -190,14 +190,62 @@
     padding: 5px;
     height: 200px;
     margin-bottom: 5px;
-  }
+}
 
 .flexi-report-sql-textarea {
     width: 100%;
+    height: 100%;
     border: none;
     outline: none;
-    resize: none;
     font-family: monospace;
     font-size: 14px;
     background: transparent;
-  }
+}
+
+
+.flexi-report-tables-container {
+    width: 250px;
+    max-height: 59vh;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.flexi-report-table-group {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.flexi-report-table-name {
+    font-weight: bold;
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 5px;
+    background-color: #f7f7f7;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.flexi-report-columns-list {
+    list-style-type: none;
+    padding-left: 15px;
+    margin: 0;
+}
+
+.flexi-report-columns-list li {
+    padding: 3px 0;
+    color: #555;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.flexi-report-columns-list li::before {
+    content: "•";
+    color: #3a86ff;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}

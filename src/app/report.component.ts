@@ -33,8 +33,8 @@ export class ReportComponent {
   readonly id = signal<string | undefined | null>(undefined);
   readonly editPath = computed(() => `/report/edit/${this.id()}`);
   readonly type = signal<string>("");
-  readonly endpoint = linkedSignal(() => this.reportResult.value()?.endpoint ?? "")
-  readonly sqlQueryLoadingSignal = signal<boolean>(false);
+  readonly endpoint = linkedSignal(() => this.reportResult.value()?.endpoint ?? "");
+  readonly sqlQuery = linkedSignal(() => this.reportResult.value()?.sqlQuery ?? "");
 
   readonly isPreview = computed(() => {
     if(!this.id()) return false;
@@ -61,7 +61,7 @@ export class ReportComponent {
       return res;
     }
   })
-  readonly data = linkedSignal(() => this.result.value() ?? []);
+  readonly data = linkedSignal(() => this.result.value() || this.sqlQueryResult.value() || []);
   readonly loading = computed(() => this.result.isLoading());
 
   readonly tablesResult = resource({
@@ -71,6 +71,19 @@ export class ReportComponent {
     }
   })
   readonly tablesData = computed(() => this.tablesResult.value() || []);
+
+  readonly sqlQueryResult = resource({
+    request: ()=> this.sqlQuery(),
+    loader: async ({request}) => {
+      if(!request) return;
+      const data = {
+        sqlQuery: this.sqlQuery()
+      }
+      var res = await lastValueFrom(this.#http.post<any[]>("https://localhost:7032/execute-query", data));
+      return res;
+    }
+  })
+  readonly sqlQueryLoadingSignal = linkedSignal(() => this.sqlQueryResult.isLoading());
 
   readonly #http = inject(HttpClient);
   readonly #activated = inject(ActivatedRoute);
@@ -111,18 +124,6 @@ export class ReportComponent {
   }
 
   onExecute(sqlQuery:string){
-    const data = {
-      sqlQuery: sqlQuery
-    }
-    this.sqlQueryLoadingSignal.set(true);
-    this.#http.post<any[]>("https://localhost:7032/execute-query", data).subscribe({
-      next: res => {
-        this.data.set(res);
-        this.sqlQueryLoadingSignal.set(false);
-      },
-      error: ()=> {
-        this.sqlQueryLoadingSignal.set(false);
-      }
-    });
+    this.sqlQuery.set(sqlQuery);
   }
 }
