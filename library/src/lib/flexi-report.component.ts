@@ -13,7 +13,7 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { FlexiGridModule } from 'flexi-grid';
 import { FlexiReportLoadingComponent } from './flexi-report-loading/flexi-report-loading.component';
 import { AISqlQueryRequestModel } from './models/ai-sql-query-request.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 
 @Component({
@@ -672,7 +672,7 @@ export class FlexiReportComponent implements OnChanges {
     }
 
     const tfoot = table.querySelector("tfoot");
-    if(tfoot){
+    if (tfoot) {
       const tr = tfoot.querySelector("tfoot tr");
       const th = this.#renderer.createElement("th");
       this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
@@ -714,7 +714,7 @@ export class FlexiReportComponent implements OnChanges {
     if (this.reportSignal()!.content) {
       this.elementArea().nativeElement.innerHTML = this.reportSignal()!.content;
     }
-    if(this.reportSignal()!.sqlQuery){
+    if (this.reportSignal()!.sqlQuery) {
       this.sqlQuery.set(this.reportSignal().sqlQuery)
     }
 
@@ -819,19 +819,19 @@ export class FlexiReportComponent implements OnChanges {
     }
   }
 
-  openDataResultPart(){
+  openDataResultPart() {
     this.dataResultPart().nativeElement.style.display = "block";
   }
 
-  closeDataResultPart(){
+  closeDataResultPart() {
     this.dataResultPart().nativeElement.style.display = "none";
   }
 
-  openSqlQueryPart(){
+  openSqlQueryPart() {
     this.sqlQueryPart().nativeElement.style.display = "block";
   }
 
-  closeSqlQueryPart(){
+  closeSqlQueryPart() {
     this.sqlQueryPart().nativeElement.style.display = "none";
   }
 
@@ -859,21 +859,51 @@ export class FlexiReportComponent implements OnChanges {
     printWindow!.close();
   }
 
-  addThisWorkToSqlQuery(text:string){
+  addThisWorkToSqlQuery(text: string) {
     this.sqlQuery.update(prev => prev += text);
   }
 
-  async askAIForSqlQuery(){
+  async askAIForSqlQuery() {
     this.aiSqlQueryRequest.update(prev => ({
       ...prev,
       apiKey: this.openAPIKey() ?? "",
       schema: JSON.stringify(this.tablesData())
     }));
 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.openAPIKey()}`,
+      'Content-Type': 'application/json'
+    });
     this.sqlQueryLoadingSignal.set(true);
-   const res = await lastValueFrom(this.#http.post<string>("https://localhost:7032/prompt", this.aiSqlQueryRequest()));
 
-   this.sqlQueryLoadingSignal.set(false);
-   this.sqlQuery.set(res);
+    const requestBody = {
+      model: this.aiSqlQueryRequest().model,
+      messages: [
+        {
+          role: "system",
+          content: `
+                  You are a SQL expert specialized strictly in Microsoft SQL Server (MSSQL).
+                  Using the provided database schema, generate the most performant, optimized, and valid MSSQL query that accurately fulfills the user's request.
+                  Your response must ONLY contain the pure SQL query for MSSQL.
+                  Do NOT include quotes, code blocks, markdown, special characters, or explanations of any kind.
+                  Always use TOP syntax for row limiting in MSSQL.
+                  Database schema: ${this.aiSqlQueryRequest().schema}
+              `
+        },
+        {
+          role: "user",
+          content: this.aiSqlQueryRequest().prompt
+        }
+      ]
+    };
+
+    const res = await lastValueFrom(this.#http.post<any>(
+      "https://api.openai.com/v1/chat/completions",
+      requestBody,
+      { headers }
+    ));
+
+    this.sqlQueryLoadingSignal.set(false);
+    this.sqlQuery.set(res.choices[0].message.content);
   }
 }
