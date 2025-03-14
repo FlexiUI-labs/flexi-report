@@ -3,7 +3,12 @@
   "version": "19.0.01",
   "peerDependencies": {
     "@angular/common": "^19.2.0",
-    "@angular/core": "^19.2.0"
+    "@angular/core": "^19.2.0",
+    "flexi-button": "^19.0.22",
+    "flexi-grid": "^19.0.56",
+    "flexi-tooltip": "^19.0.2",
+    "jspdf": "^3.0.0",
+    "ngx-json-viewer": "^3.2.1"
   },
   "dependencies": {
     "tslib": "^2.3.0"
