@@ -543,9 +543,9 @@
                     <p class="empty-text">{{noRequestElementsText()}}</p>
                 }
                 <form #form="ngForm" autocomplete="off" (ngSubmit)="sendRequest(form)">
-                    <div class="flexi-report-form-container">
+                    <div cdkDropList class="flexi-report-form-container" (cdkDropListDropped)="onDropForRequestElements($event)">
                         @for(element of reportSignal().requestElements; track element){
-                            <div class="flexi-report-card">
+                            <div cdkDrag class="flexi-report-card">
                                 <div class="flexi-report-card-header">
                                     <label>{{element.label}}</label>
                                     @if(!isPreview()){

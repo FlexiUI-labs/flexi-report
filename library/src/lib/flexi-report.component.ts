@@ -1,4 +1,4 @@
-import { DragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, DragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -1063,5 +1063,17 @@ export class FlexiReportComponent implements OnChanges {
     }
 
     this.closeRequestElementPart();
+  }
+
+  onDropForRequestElements(event: CdkDragDrop<RequestElementModel[]>) {
+    const elements = [...this.reportSignal().requestElements];
+
+    moveItemInArray(elements, event.previousIndex, event.currentIndex);
+    elements.forEach((element, index) => element.index = index);
+
+    this.reportSignal.update(prev => ({
+      ...prev,
+      requestElements: elements
+    }));
   }
 }
