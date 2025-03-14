@@ -349,10 +349,12 @@ export class FlexiReportComponent implements OnChanges {
     const pageWidth = +this.pageSetting().width.replace("px", "");
     const pageHeight = +this.pageSetting().height.replace("px", "");
 
+    const padding = 20;
+
     const pdf = new jsPDF({
       orientation: this.reportSignal().pageOrientation,
       unit: 'px',
-      format: [pageWidth, pageHeight]
+      format: [pageWidth + padding * 2, pageHeight + padding * 2]
     });
 
     let ttfLink = "https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf";
@@ -365,10 +367,10 @@ export class FlexiReportComponent implements OnChanges {
       callback: (doc) => {
         doc.save('report.pdf');
       },
-      x: 0,
-      y: 0,
+      x: padding,
+      y: padding,
       width: pageWidth,
-      windowWidth: pageWidth
+      windowWidth: pageWidth + padding * 2
     });
 
     this.loadingSignal.set(false);
