@@ -504,13 +504,13 @@
                     </div>
                     <div>
                         <flexi-grid
-                        [data]="data() || []"
+                        [data]="listData() || []"
                         [pageSize]="5"
                         [useMinHeight]="false"
                         [showFilterPanel]="false">
                             @for(property of listProperties(); track property){
                                 @if(property !== "index"){
-                                    <flexi-grid-column [field]="property" />
+                                    <flexi-grid-column [field]="property" [filterType]="findFilterType(listData()[0][property])" [textAlign]="findFilterType(listData()[0][property]) === 'number' ? 'right' : 'left'" />
                                 }
                             }
                         </flexi-grid>

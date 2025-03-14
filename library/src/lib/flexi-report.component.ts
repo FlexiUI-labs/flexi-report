@@ -10,7 +10,7 @@ import { ReportModel } from './models/report.model';
 import { RouterLink } from '@angular/router';
 import { FlexiTooltipDirective } from 'flexi-tooltip';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
-import { FlexiGridModule } from 'flexi-grid';
+import { FilterType, FlexiGridModule } from 'flexi-grid';
 import { FlexiReportLoadingComponent } from './flexi-report-loading/flexi-report-loading.component';
 import { AISqlQueryRequestModel } from './models/ai-sql-query-request.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -984,5 +984,11 @@ export class FlexiReportComponent implements OnChanges {
     } else {
       this.style.selectedElement()?.removeAttribute("data-property");
     }
+  }
+
+  findFilterType(val:any): FilterType{
+    const type =typeof(val);
+    if(type === "number") return "number";
+    return "text";
   }
 }
