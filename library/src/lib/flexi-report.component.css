@@ -48,6 +48,12 @@
     background-color: #f1f1f1;
 }
 
+.flex-report-setting-part-container {
+    overflow: auto;
+    padding: 0px 15px;
+    margin-bottom: 30px;
+}
+
 .flexi-report-table-container {
     max-height: 420px;
     overflow-y: auto;
@@ -117,6 +123,7 @@
     flex-direction: column;
     justify-content: space-between;
     width: 420px;
+    min-width: 300px;
     border-right: 1px solid;
     height: auto;
 }
@@ -200,12 +207,6 @@
     font-family: 'IBM Plex Sans', sans-serif;
 }
 
-.flexi-report-setting-button-part {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
 .flexi-report-setting-close-btn {
     position: absolute;
     top: 5px;
@@ -266,7 +267,7 @@
     z-index: 1;
 }
 
-.flexi-report-data-result:hover{
+.flexi-report-data-result:hover {
     background-color: #fff !important;
 }
 
@@ -549,10 +550,46 @@
 .flexi-report-submit-container {
     text-align: center;
     margin-top: 15px;
+    width: 100%;
 }
 
 .flexi-report-delete-btn {
     position: absolute;
     top: 10px;
     right: 10px;
+}
+
+.flexi-report-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.flexi-report-zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.flexi-report-zoom-input {
+    width: 70px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.flexi-report-setting-button-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+@media (max-width: 768px) {
+    .flexi-report-header {
+        flex-direction: column;
+    }
 }

@@ -17,6 +17,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { initilizeRequestElementModel, RequestElementModel } from './models/request-element.model';
 import { RequestModel } from './models/request.model';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'flexi-report',
@@ -104,7 +106,9 @@ export class FlexiReportComponent implements OnChanges {
   readonly requestFormsText = computed(() => this.language() === "en" ? "Request Forms" : "İstek Formu");
   readonly noRequestElementsText = computed(() => this.language() === "en" ? "No request elements added" : "İstek için eklenen bir element yok");
   readonly openRequestParamsText = computed(() => this.language() === "en" ? "Open request params form" : "İstek formunu aç");
-  readonly getReportText = computed(() => this.language() === "en" ? "Get Report" : "Raporu Getir");
+  readonly getReportText = computed(() => this.language() === "en" ? "Get report" : "Raporu getir");
+  readonly exportToExcelText = computed(() => this.language() === "en" ? "Export to Excel" : "Excel'i İndir");
+  readonly pageBackgroundColorText = computed(() => this.language() === "en" ? "Page BG Color" : "Page BG Color");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -342,14 +346,16 @@ export class FlexiReportComponent implements OnChanges {
   async downloadAsPDF() {
     if (!this.pdfArea()) return;
 
+    this.pdfArea().nativeElement.style.backgroundColor = this.reportSignal().backgroundColor || "#ffffff";
+
     this.preview();
     this.loadingSignal.set(true);
 
     await new Promise(resolve => setTimeout(resolve, 100));
     const pageWidth = +this.pageSetting().width.replace("px", "");
     const pageHeight = +this.pageSetting().height.replace("px", "");
-
     const padding = 20;
+    const bgColor = this.reportSignal().backgroundColor || "#ffffff";
 
     const pdf = new jsPDF({
       orientation: this.reportSignal().pageOrientation,
@@ -359,6 +365,9 @@ export class FlexiReportComponent implements OnChanges {
 
     let ttfLink = "https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf";
     let fontName = "Roboto";
+
+    pdf.setFillColor(bgColor);
+    pdf.rect(0, 0, pageWidth + padding * 2, pageHeight + padding * 2, "F");
 
     pdf.addFont(ttfLink, fontName, "normal");
     pdf.setFont(fontName);
@@ -1112,4 +1121,19 @@ export class FlexiReportComponent implements OnChanges {
     this.tableHeads.set(headers);
     this.updateTableHeads();
   }
+
+  exportToExcel() {
+    if (!this.listData() || this.listData().length === 0) {
+        alert('No data available to export.');
+        return;
+    }
+
+    const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.listData());
+    const workbook: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Report Data");
+
+    const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data: Blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "Report.xlsx");
+}
 }

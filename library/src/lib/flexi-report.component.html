@@ -1,6 +1,6 @@
 <div style="position: relative; display: flex; gap: 20px; font-family: 'IBM Plex Sans', sans-serif;">
     <div class="flex-report-setting-part" [style.display]="this.isPreview() ? 'none' : 'flex'">
-        <div style="overflow: auto; padding: 0px 15px; margin-bottom: 30px;">
+        <div class="flex-report-setting-part-container">
             <div>
                 <p class="flexi-report-setting-title">Flexi Report</p>
                 @if(!isPreview()){
@@ -57,6 +57,12 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>{{ pageBackgroundColorText() }}</th>
+                                <td>
+                                    <input class="flexi-report-input" type="color" [(ngModel)]="reportSignal().backgroundColor" (input)="changePageSetting()" />
+                                </td>
+                            </tr>
+                            <tr>
                                 <th>{{ pageFontFamilyText() }}</th>
                                 <td>
                                     <select class="flexi-report-select" [(ngModel)]="reportSignal().fontFamily">
@@ -96,14 +102,14 @@
         </div>
     </div>
     <div class="flex-report-content-part">
-        <div style="display: flex; gap: 10px; align-items: center; width: 75%; margin-bottom: 10px;">
+        <div class="flexi-report-header">
             <span class="flexi-report-setting-title" style="font-size: 20px;">Report Page</span>
-            <div style="display: flex; gap: 5px; justify-content: start;">
+            <div class="flexi-report-zoom-controls">
                 <flexi-button btnColor="light" btnSize="small" btnIcon="remove" (click)="zoomOut()" />
                 <input [value]="'%' + (zoomValue() * 100).toFixed(0)" style="width: 70px; text-align: center;"/>
                 <flexi-button btnColor="light" btnSize="small" btnIcon="add" (click)="zoomIn()" />
             </div>
-            <div class="flexi-report-setting-button-part">
+            <div class="flexi-report-setting-button-container">
                 @if(isPreview()){
                     <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
                 }@else{
@@ -126,11 +132,17 @@
                 }
                 <flexi-button btnColor="success" [title]="donwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
                 <flexi-button btnColor="dark" [title]="printText()" flexiTooltip="top" btnIcon="print" (click)="print()" />
+                <flexi-button btnColor="success" [title]="exportToExcelText()" btnIcon="file_download" (click)="exportToExcel()" />
             </div>
         </div>
         <div class="flexi-report-pdf-container" [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">
-            <div class="flexi-report-pdf-wrapper" [style.width]="pageSetting().width"
-                [style.height]="pageSetting().height" [style.width]="pageSetting().width" [style.fontFamily]="reportSignal().fontFamily">
+            <div class="flexi-report-pdf-wrapper"
+                [style.width]="pageSetting().width"
+                [style.height]="pageSetting().height"
+                [style.width]="pageSetting().width"
+                [style.fontFamily]="reportSignal().fontFamily"
+                [style.backgroundColor]="reportSignal().backgroundColor"
+                >
                     @if(isPreview()){
                         @if(loadingSignal() || sqlQueryLoadingSignal()){
                             <div class="flexi-report-loading-overlay">
@@ -267,7 +279,7 @@
                             </td>
                         </tr>
                     }
-    
+
                     @if(style.elementType() !== "TABLE"){
                         <tr>
                             <th>Border Width</th>
@@ -309,7 +321,7 @@
                             </td>
                         </tr>
                     }
-    
+
                     @if(style.elementType() === "TABLE"){
                         <tr>
                             <th>TH Border Width</th>
@@ -580,7 +592,7 @@
                     </div>
                     @if(reportSignal().requestElements.length > 0){
                         <div class="flexi-report-submit-container">
-                            <flexi-button btnType="submit" btnColor="success" btnIcon="search" />
+                            <flexi-button btnType="submit" btnColor="success" btnIcon="search" btnWidth="100%" style="width: 100%;" />
                         </div>
                     }
                 </form>

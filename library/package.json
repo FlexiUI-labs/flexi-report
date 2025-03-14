@@ -8,7 +8,10 @@
     "flexi-grid": "^19.0.56",
     "flexi-tooltip": "^19.0.2",
     "jspdf": "^3.0.0",
-    "ngx-json-viewer": "^3.2.1"
+    "ngx-json-viewer": "^3.2.1",
+    "xlsx": "^0.18.5",
+    "file-saver": "^2.0.5",
+    "@types/file-saver": "^2.0.7"
   },
   "dependencies": {
     "tslib": "^2.3.0"

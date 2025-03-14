@@ -11,4 +11,5 @@ export class ReportModel{
     fontFamily: string = "Roboto";
     sqlQuery: string = "";
     requestElements: RequestElementModel[] = [];
+    backgroundColor: string = "#ffffff";
 }
