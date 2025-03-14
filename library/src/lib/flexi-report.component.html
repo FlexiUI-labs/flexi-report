@@ -543,22 +543,26 @@
                     <p class="empty-text">{{noRequestElementsText()}}</p>
                 }
                 <form #form="ngForm" autocomplete="off" (ngSubmit)="sendRequest(form)">
-                    <ul>
+                    <div class="flexi-report-form-container">
                         @for(element of reportSignal().requestElements; track element){
-                            <li>
-                                <div style="display: flex; gap: 5px; padding: 5px; align-items: center;">
-                                    <label style="width: 100%;">{{element.label}}</label>
+                            <div class="flexi-report-card">
+                                <div class="flexi-report-card-header">
+                                    <label>{{element.label}}</label>
+                                    @if(!isPreview()){
+                                        <flexi-button btnSize="x-small" btnColor="danger" btnIcon="delete" (click)="removeRequestElement(element.name)" class="flexi-report-delete-btn"/>
+                                    }
+                                </div>
+                                <div class="flexi-report-card-body">
                                     <input class="flexi-report-input" [type]="element.type" [name]="element.name" [ngModel]="element.type === 'date' ? date() : ''">
                                 </div>
-                                @if(!isPreview()){
-                                    <flexi-button btnSize="x-small" btnColor="danger" btnIcon="delete" (click)="removeRequestElement(element.name)" />
-                                }
-                            </li>
+                            </div>
                         }
-                    </ul>
-                    <div style="text-align: center; margin-top: 5px;">
-                        <flexi-button btnType="submit" btnColor="success" btnIcon="search" />
                     </div>
+                    @if(reportSignal().requestElements.length > 0){
+                        <div class="flexi-report-submit-container">
+                            <flexi-button btnType="submit" btnColor="success" btnIcon="search" />
+                        </div>
+                    }
                 </form>
             </div>
 

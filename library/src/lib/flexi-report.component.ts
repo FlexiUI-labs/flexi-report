@@ -131,7 +131,7 @@ export class FlexiReportComponent implements OnChanges {
 
   getNowDate() {
     let day = new Date().getDate().toString();
-    if(day.length === 1) day = "0" + day;
+    if (day.length === 1) day = "0" + day;
 
     let month = (new Date().getMonth() + 1).toString();
     if (month.length === 1) month = "0" + month;
@@ -1013,12 +1013,27 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   addRequestElement() {
-    this.reportSignal().requestElements.push({ ...this.requestElement() });
+    const currentElements = this.reportSignal().requestElements;
+    const newIndex = currentElements.length;
+
+    const newElement: RequestElementModel = {
+      ...this.requestElement(),
+      index: newIndex
+    };
+
+    this.reportSignal.update(prev => ({
+      ...prev,
+      requestElements: [...prev.requestElements, newElement]
+    }));
+
     this.requestElement.set(initilizeRequestElementModel);
   }
 
   removeRequestElement(name: string) {
-    const elements = [...this.reportSignal().requestElements.filter(p => p.name !== name)];
+    const elements = this.reportSignal().requestElements
+      .filter(p => p.name !== name)
+      .map((element, index) => ({ ...element, index }));
+
     this.reportSignal.update(prev => ({
       ...prev,
       requestElements: elements
