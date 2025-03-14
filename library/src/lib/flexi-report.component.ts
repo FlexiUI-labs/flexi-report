@@ -54,7 +54,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<string[]>([
-    "H1", "H2", "H3", "H4", "H5", "H6", "SPAN", "P", "HR", "IMG", "TABLE"
+    "H1", "SPAN", "P", "HR", "IMG", "TABLE"
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
@@ -198,7 +198,7 @@ export class FlexiReportComponent implements OnChanges {
     type = type.toLowerCase();
     let newElement: HTMLElement | null = null;
 
-    if (["h1", "h2", "h3", "h4", "h5", "h6"].includes(type)) {
+    if (type == "h1") {
       newElement = this.createHeading(type);
     } else if (type === "span") {
       newElement = this.createSpan();
@@ -229,6 +229,7 @@ export class FlexiReportComponent implements OnChanges {
     const text = this.#renderer.createText("Title");
     this.#renderer.appendChild(heading, text);
     this.#renderer.setStyle(heading, 'width', 'fit-content');
+    this.#renderer.setStyle(heading, 'font-size', '20px');
     return heading;
   }
 

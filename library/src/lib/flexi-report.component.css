@@ -44,12 +44,43 @@
 .flexi-report-table {
     border-collapse: collapse;
     width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .flexi-report-table th,
 .flexi-report-table td {
     border: 1px solid;
     text-align: left;
+}
+
+.flexi-report-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+}
+
+.flexi-report-table td {
+    background-color: #ffffff;
+}
+
+.flexi-report-table select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: 0.2s;
+    background-color: #fff;
+}
+
+.flexi-report-table select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
 .flex-report-setting-part {
@@ -73,11 +104,19 @@
 .flexi-report-setting-subtitle {
     text-align: center;
     font-weight: bold;
-    padding: 5px;
-    font-size: large;
+    padding: 10px;
+    font-size: 16px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px;
+    border-bottom: 2px solid #ddd;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 10px;
+}
+
+.flexi-report-setting-subtitle:hover {
+    color: #007bff;
 }
 
 .flexi-report-select {
@@ -90,13 +129,30 @@
     display: flex;
     flex-direction: column;
     padding: 10px;
-    margin: 0px;
+    margin: 0;
     margin-bottom: 20px;
     overflow: auto;
+    gap: 5px;
 }
 
 .flexi-report-ul li {
-    border: 1px solid;
+    border: 1px solid #ddd;
+    background-color: #ffffff;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 8px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.flexi-report-ul li:hover {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+    transform: scale(1.05);
 }
 
 .flexi-report-style-part {
@@ -106,26 +162,43 @@
     position: absolute;
     left: 430px;
     top: 80px;
-    border: 1px solid black;
-    background-color: #f1f1f1;
-    padding: 10px 15px;
-    z-index: 1;
+    border: 1px solid #ddd;
+    background-color: #ffffff;
+    padding: 15px 20px;
+    z-index: 10;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    font-family: 'IBM Plex Sans', sans-serif;
 }
 
 .flexi-report-setting-button-part {
     display: flex;
     justify-content: center;
-    gap: 5px;
+    gap: 10px;
+    padding-top: 10px;
 }
 
 .flexi-report-setting-close-btn {
     position: absolute;
     top: 10px;
-    right: 20px;
+    right: 25px;
 }
 
 .flexi-report-input {
-    width: 150px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    background-color: #fff;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.flexi-report-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
 .flexi-report-selected {
@@ -203,6 +276,13 @@
     background: transparent;
 }
 
+.flexi-report-table th,
+.flexi-report-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 14px;
+}
 
 .flexi-report-tables-container {
     width: 250px;
@@ -264,4 +344,27 @@
 .flexi-report-sql-editor-input:focus {
     border-color: #0056b3;
     box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+}
+
+
+.flexi-report-properties {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.flexi-report-properties div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.flexi-report-properties-strong {
+    font-size: 14px;
 }

@@ -5,9 +5,9 @@
                 <p class="flexi-report-setting-title">Flexi Report</p>
                 @if(!isPreview()){
                     <hr>
-                    <div class="flexi-report-setting-subtitle">
+                    <div class="flexi-report-setting-subtitle" (click)="showProperties.set(!showProperties())">
                         {{ propertiesText() }}
-                        <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;" (click)="showProperties.set(!showProperties())">
+                        <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;">
                             @if(!showProperties()){
                                 keyboard_arrow_down
                             }@else {
@@ -17,18 +17,17 @@
                     </div>
                     <div [ngClass]="showProperties() ? 'flexi-report-show' : 'flexi-report-hide'">
                         <div>
-                            <strong>{{ endpointText() }}</strong>
-                            <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint" (change)="onEndpointChange.emit(reportSignal().endpoint)">
+                            <strong class="flexi-report-properties-strong">{{ endpointText() }}</strong>
+                            <input class="flexi-report-input" style="width: 100%;" type="text" [(ngModel)]="reportSignal().endpoint" (change)="onEndpointChange.emit(reportSignal().endpoint)">
                         </div>
                         <div style="margin-top: 5px;">
-                            <strong>{{ reportTitleText() }}</strong>
-                            <input style="width: 100%;" type="text" [(ngModel)]="reportSignal().name">
+                            <strong class="flexi-report-properties-strong">{{ reportTitleText() }}</strong>
+                            <input class="flexi-report-input" style="width: 100%;" type="text" [(ngModel)]="reportSignal().name">
                         </div>
                     </div>
-                    <hr>
-                    <div class="flexi-report-setting-subtitle">
+                    <div class="flexi-report-setting-subtitle" (click)="showPageSettings.set(!showPageSettings())">
                         {{ pageSettingsText() }}
-                        <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;" (click)="showPageSettings.set(!showPageSettings())">
+                        <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;">
                             @if(!showPageSettings()){
                                 keyboard_arrow_down
                             }@else {
@@ -69,11 +68,10 @@
                             </tr>
                         </table>
                     </div>
-                    <hr>
                     <div>
-                        <div class="flexi-report-setting-subtitle">
+                        <div class="flexi-report-setting-subtitle" (click)="showElements.set(!showElements())">
                             {{ elementsText() }}
-                            <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;" (click)="showElements.set(!showElements())">
+                            <span class="material-symbols-outlined" style="cursor: pointer; user-select: none;">
                                 @if(!showElements()){
                                     keyboard_arrow_down
                                 }@else {
@@ -152,227 +150,229 @@
                     <flexi-button btnSize="x-small" btnColor="danger" btnIcon="close" title="Close" (click)="closeStylePart()" />
                 </div>
             </div>
-            <table style="text-align: left; margin-bottom: 5px;" (mousedown)="$event.stopPropagation()">
-                @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
+            <div style="max-height: 500px; overflow: auto; padding-right: 25px;">
+                <table style="text-align: left; margin-bottom: 5px;" (mousedown)="$event.stopPropagation()">
+                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
+                        <tr>
+                            <th>Text</th>
+                            <td>
+                                <input class="flexi-report-input" [(ngModel)]="style.elementStyle().text" (input)="style.changeElementText()" />
+                            </td>
+                        </tr>
+                    }
                     <tr>
-                        <th>Text</th>
+                        <th>Width</th>
                         <td>
-                            <input class="flexi-report-input" [(ngModel)]="style.elementStyle().text" (input)="style.changeElementText()" />
+                            <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().width" (input)="style.changeElementWith()">
                         </td>
                     </tr>
-                }
-                <tr>
-                    <th>Width</th>
-                    <td>
-                        <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().width" (input)="style.changeElementWith()">
-                    </td>
-                </tr>
-                @if(style.elementType() === "IMG"){
-                    <tr>
-                        <th>Height</th>
-                        <td>
-                            <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().height" (input)="style.changeElementHeight()">
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Object Fit</th>
-                        <td>
-                            <select class="flexi-report-input" [(ngModel)]="style.elementStyle().objectFit" (change)="style.changeElementObjectFit()">
-                                @for(val of style.objectFits(); track val){
+                    @if(style.elementType() === "IMG"){
+                        <tr>
+                            <th>Height</th>
+                            <td>
+                                <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().height" (input)="style.changeElementHeight()">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Object Fit</th>
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="style.elementStyle().objectFit" (change)="style.changeElementObjectFit()">
+                                    @for(val of style.objectFits(); track val){
+                                        <option>{{val}}</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{selectImageText()}}</th>
+                            <td>
+                                <input class="flexi-report-input" type="file" (change)="style.selectImage($event)" />
+                            </td>
+                        </tr>
+                    }
+                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
+                        <tr>
+                            <th>Text Align</th>
+                            <td>
+                                <select class="flexi-report-input" (change)="style.changeElementTextAlign()" [(ngModel)]="style.elementStyle().textAlign">
+                                    <option value="start">Start</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">End</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Font Size</th>
+                            <td>
+                              <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().fontSize" (input)="style.changeElementFontSize()" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Font Family</th>
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="style.elementStyle().fontFamily" (change)="style.changeElementFontFamily()">
+                                    @for(family of style.fontFamilies(); track family){
+                                        <option>{{family}}</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Font Weight</th>
+                            <td>
+                              <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().fontWeight" (input)="style.changeElementFontWeight()" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Text Decoration</th>
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="style.elementStyle().textDecoration" (change)="style.changeElementTextDecoration()">
+                                    @for(decoration of style.textDecorations(); track decoration){
+                                        <option>{{decoration}}</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Text Color</th>
+                            <td>
+                              <input class="flexi-report-input" type="color" [(ngModel)]="style.elementStyle().color" (input)="style.changeElementTextColor()" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Background Color</th>
+                            <td>
+                              <input class="flexi-report-input" type="color" [(ngModel)]="style.elementStyle().backgroundColor" (input)="style.changeElementBackgroundColor()" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Padding</th>
+                            <td>
+                              <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().padding" (input)="style.changeElementPadding()" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Margin</th>
+                            <td>
+                              <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().margin" (input)="style.changeElementMargin()" />
+                            </td>
+                        </tr>
+                    }
+    
+                    @if(style.elementType() !== "TABLE"){
+                        <tr>
+                            <th>Border Width</th>
+                            <td>
+                                <input class="flexi-report-input" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderWidth" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Border Style</th>
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="style.elementStyle().borderStyle" (change)="style.changeElementBorder()">
+                                    @for(border of style.borderStles(); track border){
+                                        <option>{{border}}</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Border Color</th>
+                            <td>
+                                <input class="flexi-report-input" type="color" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderColor" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Border Radius</th>
+                            <td>
+                              <input class="flexi-report-input" type="text" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Poperty</th>
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="style.elementStyle().property" (change)="setProperty($event)">
+                                    <option value="">{{ noSelectText() }}</option>
+                                    @for(val of singleProperties(); track val){
                                     <option>{{val}}</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>{{selectImageText()}}</th>
-                        <td>
-                            <input class="flexi-report-input" type="file" (change)="style.selectImage($event)" />
-                        </td>
-                    </tr>
-                }
-                @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG"){
-                    <tr>
-                        <th>Text Align</th>
-                        <td>
-                            <select class="flexi-report-input" (change)="style.changeElementTextAlign()" [(ngModel)]="style.elementStyle().textAlign">
-                                <option value="start">Start</option>
-                                <option value="center">Center</option>
-                                <option value="right">End</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Font Size</th>
-                        <td>
-                          <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().fontSize" (input)="style.changeElementFontSize()" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Font Family</th>
-                        <td>
-                            <select class="flexi-report-input" [(ngModel)]="style.elementStyle().fontFamily" (change)="style.changeElementFontFamily()">
-                                @for(family of style.fontFamilies(); track family){
-                                    <option>{{family}}</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Font Weight</th>
-                        <td>
-                          <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().fontWeight" (input)="style.changeElementFontWeight()" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Text Decoration</th>
-                        <td>
-                            <select class="flexi-report-input" [(ngModel)]="style.elementStyle().textDecoration" (change)="style.changeElementTextDecoration()">
-                                @for(decoration of style.textDecorations(); track decoration){
-                                    <option>{{decoration}}</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Text Color</th>
-                        <td>
-                          <input class="flexi-report-input" type="color" [(ngModel)]="style.elementStyle().color" (input)="style.changeElementTextColor()" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Background Color</th>
-                        <td>
-                          <input class="flexi-report-input" type="color" [(ngModel)]="style.elementStyle().backgroundColor" (input)="style.changeElementBackgroundColor()" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Padding</th>
-                        <td>
-                          <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().padding" (input)="style.changeElementPadding()" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Margin</th>
-                        <td>
-                          <input class="flexi-report-input" type="text" [(ngModel)]="style.elementStyle().margin" (input)="style.changeElementMargin()" />
-                        </td>
-                    </tr>
-                }
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                    }
+    
+                    @if(style.elementType() === "TABLE"){
+                        <tr>
+                            <th>TH Border Width</th>
+                            <td>
+                                <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderWidth" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>TH Border Style</th>
+                            <td>
+                                <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderStyle" >
+                                    @for(border of style.borderStles(); track border){
+                                        <option>{{border}}</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>TH Border Color</th>
+                            <td>
+                                <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderColor" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>TH Font Size</th>
+                            <td>
+                              <input class="flexi-report-input" type="text" (input)="style.changeTableFontSize()" [(ngModel)]="style.elementStyle().thFontSize" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>TD Border Width</th>
+                            <td>
+                                <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderWidth" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>TD Border Style</th>
+                            <td>
+                                <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderStyle" >
+                                    @for(border of style.borderStles(); track border){
+                                        <option>{{border}}</option>
+                                    }
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>TD Border Color</th>
+                            <td>
+                                <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderColor" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>TD Font Size</th>
+                            <td>
+                              <input class="flexi-report-input" type="text" (input)="style.changeTableFontSize()" [(ngModel)]="style.elementStyle().tdFontSize" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{showFooterText()}}</th>
+                            <td>
+                                <input type="checkbox" id="showFooterCheckbox" [checked]="style.showFooter()" (change)="changeShowFooter($event)" />
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
 
-                @if(style.elementType() !== "TABLE"){
-                    <tr>
-                        <th>Border Width</th>
-                        <td>
-                            <input class="flexi-report-input" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderWidth" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Border Style</th>
-                        <td>
-                            <select class="flexi-report-input" [(ngModel)]="style.elementStyle().borderStyle" (change)="style.changeElementBorder()">
-                                @for(border of style.borderStles(); track border){
-                                    <option>{{border}}</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Border Color</th>
-                        <td>
-                            <input class="flexi-report-input" type="color" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderColor" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Border Radius</th>
-                        <td>
-                          <input class="flexi-report-input" type="text" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Poperty</th>
-                        <td>
-                            <select class="flexi-report-input" [(ngModel)]="style.elementStyle().property" (change)="setProperty($event)">
-                                <option value="">{{ noSelectText() }}</option>
-                                @for(val of singleProperties(); track val){
-                                <option>{{val}}</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                }
-
-                @if(style.elementType() === "TABLE"){
-                    <tr>
-                        <th>TH Border Width</th>
-                        <td>
-                            <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderWidth" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TH Border Style</th>
-                        <td>
-                            <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderStyle" >
-                                @for(border of style.borderStles(); track border){
-                                    <option>{{border}}</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TH Border Color</th>
-                        <td>
-                            <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().thBorderColor" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TH Font Size</th>
-                        <td>
-                          <input class="flexi-report-input" type="text" (input)="style.changeTableFontSize()" [(ngModel)]="style.elementStyle().thFontSize" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TD Border Width</th>
-                        <td>
-                            <input class="flexi-report-input" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderWidth" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TD Border Style</th>
-                        <td>
-                            <select class="flexi-report-input" (change)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderStyle" >
-                                @for(border of style.borderStles(); track border){
-                                    <option>{{border}}</option>
-                                }
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TD Border Color</th>
-                        <td>
-                            <input class="flexi-report-input" type="color" (input)="style.changeTableBorder()" [(ngModel)]="style.elementStyle().tdBorderColor" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>TD Font Size</th>
-                        <td>
-                          <input class="flexi-report-input" type="text" (input)="style.changeTableFontSize()" [(ngModel)]="style.elementStyle().tdFontSize" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>{{showFooterText()}}</th>
-                        <td>
-                            <input type="checkbox" id="showFooterCheckbox" [checked]="style.showFooter()" (change)="changeShowFooter($event)" />
-                        </td>
-                    </tr>
-                }
-            </table>
-
-            <div style="text-align: center;">
+            <div style="text-align: center; margin-top: 10px;">
                 <flexi-button btnColor="danger" btnSize="medium" btnIcon="delete" [title]="deleteElementText()" (click)="deleteElement()" />
             </div>
         </div>
-        <div style="padding: 5px 15px;">
+        <div>
             @if(style.elementType() === "TABLE"){
                 <div class="flexi-report-setting-subtitle">{{ tableHeadersSettingsText() }}</div>
                 <div style="max-height: 420px; overflow: auto; padding: 2px 10px">
