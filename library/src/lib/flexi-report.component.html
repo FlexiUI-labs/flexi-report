@@ -472,11 +472,24 @@
                     }
                 </div>
                 <div style="width: 100%; position: relative;">
+                    @if(openAPIKey()){
+                        <div style="display: flex;align-items: center; gap: 10px; margin-bottom: 10px; justify-content: center;">
+                            @if(!showAIHelpQuery()){
+                                <flexi-button btnColor="success" btnText="Ask AI to help for the SQL Query" btnIcon="person_raised_hand" btnSize="large" (click)="showAIHelpQuery.set(!showAIHelpQuery())"/>
+                            }
+
+                            @if(showAIHelpQuery()){
+                                <input class="flexi-report-sql-editor-input" type="text" placeholder="Ask AI..." [(ngModel)]="aiSqlQueryRequest().prompt">
+                                <flexi-button title="Send" btnColor="primary" btnSize="large" btnIcon="send" (click)="askAIForSqlQuery()" />
+                                <flexi-button btnColor="danger" title="Close" btnIcon="close" btnSize="large" (click)="showAIHelpQuery.set(!showAIHelpQuery())"/>
+                            }
+                        </div>
+                    }
                     <div class="flexi-report-sql-editor-container">
                         <textarea class="flexi-report-sql-textarea" spellcheck="false" [(ngModel)]="sqlQuery" name="sqlQuery"></textarea>
-                    </div>
-                    <div style="text-align: right; margin-bottom: 5px; position: absolute; top: 10px; right: 10px;">
-                        <flexi-button btnColor="primary" btnIcon="send" btnText="Execute" (click)="onExecute.emit(sqlQuery())" />
+                        <div style="text-align: right; margin-bottom: 5px; position: absolute; bottom: 30px; right: 50px; z-index: 1;">
+                            <flexi-button btnColor="primary" btnIcon="send" btnText="Execute" (click)="onExecute.emit(sqlQuery())" />
+                        </div>
                     </div>
                     <div>
                         <flexi-grid

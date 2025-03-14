@@ -15,15 +15,16 @@ import { FlexiToastService } from 'flexi-toast';
       [report]="report()"
       [data]="data()"
       [loading]="loading()"
-      (onSave)="onSave($event)"
+      [openAPIKey]="openAPIKey()"
       [isPreview]="isPreview()"
       [editPath]="editPath()"
+      [sqlQueryLoading]="sqlQueryLoadingSignal()"
+      [tablesData]="tablesData()"
+      (onSave)="onSave($event)"
       (onNewReport)="onNewReport()"
       (onDelete)="onDelete($event)"
       (onEndpointChange)="onEndpointChange($event)"
       (onExecute)="onExecute($event)"
-      [sqlQueryLoadingSignal]="sqlQueryLoadingSignal()"
-      [tablesData]="tablesData()"
       />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +36,7 @@ export class ReportComponent {
   readonly type = signal<string>("");
   readonly endpoint = linkedSignal(() => this.reportResult.value()?.endpoint ?? "");
   readonly sqlQuery = linkedSignal(() => this.reportResult.value()?.sqlQuery ?? "");
+  readonly openAPIKey = signal<string>("");
 
   readonly isPreview = computed(() => {
     if(!this.id()) return false;

@@ -12,6 +12,9 @@ import { FlexiTooltipDirective } from 'flexi-tooltip';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { FlexiGridModule } from 'flexi-grid';
 import { FlexiReportLoadingComponent } from './flexi-report-loading/flexi-report-loading.component';
+import { AISqlQueryRequestModel } from './models/ai-sql-query-request.model';
+import { HttpClient } from '@angular/common/http';
+import { lastValueFrom } from 'rxjs';
 
 @Component({
   selector: 'flexi-report',
@@ -38,9 +41,13 @@ export class FlexiReportComponent implements OnChanges {
   readonly editPath = input<string>();
   readonly isPreview = input<boolean>(false);
   readonly loading = input<boolean>(false);
-  readonly sqlQueryLoadingSignal = input<boolean>(false);
+  readonly sqlQueryLoading = input<boolean>(false);
   readonly tablesData = input<any[]>();
+  readonly openAPIKey = input<string>();
 
+  readonly showAIHelpQuery = signal<boolean>(false);
+  readonly sqlQueryLoadingSignal = linkedSignal(() => this.sqlQueryLoading())
+  readonly aiSqlQueryRequest = signal<AISqlQueryRequestModel>(new AISqlQueryRequestModel());
   readonly sqlQuery = signal<string>("");
   readonly loadingSignal = linkedSignal(() => this.loading());
   readonly dataString = computed(() => JSON.stringify(this.data()) ?? "");
@@ -100,6 +107,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly #renderer = inject(Renderer2);
   readonly #dragDrop = inject(DragDrop);
   readonly style = inject(StyleService);
+  readonly #http = inject(HttpClient);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.reportSignal()) {
@@ -853,5 +861,19 @@ export class FlexiReportComponent implements OnChanges {
 
   addThisWorkToSqlQuery(text:string){
     this.sqlQuery.update(prev => prev += text);
+  }
+
+  async askAIForSqlQuery(){
+    this.aiSqlQueryRequest.update(prev => ({
+      ...prev,
+      apiKey: this.openAPIKey() ?? "",
+      schema: JSON.stringify(this.tablesData())
+    }));
+
+    this.sqlQueryLoadingSignal.set(true);
+   const res = await lastValueFrom(this.#http.post<string>("https://localhost:7032/prompt", this.aiSqlQueryRequest()));
+
+   this.sqlQueryLoadingSignal.set(false);
+   this.sqlQuery.set(res);
   }
 }
