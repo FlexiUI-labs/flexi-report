@@ -289,6 +289,17 @@
                           <input class="flexi-report-input" type="text" (input)="style.changeElementBorder()" [(ngModel)]="style.elementStyle().borderRadius" />
                         </td>
                     </tr>
+                    <tr>
+                        <th>Poperty</th>
+                        <td>
+                            <select class="flexi-report-input" [(ngModel)]="style.elementStyle().property" (change)="setProperty($event)">
+                                <option value="">{{ noSelectText() }}</option>
+                                @for(val of singleProperties(); track val){
+                                <option>{{val}}</option>
+                                }
+                            </select>
+                        </td>
+                    </tr>
                 }
 
                 @if(style.elementType() === "TABLE"){
@@ -394,7 +405,7 @@
                                 <td>
                                     <select class="flexi-report-input" [(ngModel)]="head.property" (change)="updateTableHeads()">
                                         <option value="">{{ noSelectText() }}</option>
-                                        @for(val of properties(); track val){
+                                        @for(val of listProperties(); track val){
                                         <option>{{val}}</option>
                                         }
                                     </select>
@@ -497,7 +508,7 @@
                         [pageSize]="5"
                         [useMinHeight]="false"
                         [showFilterPanel]="false">
-                            @for(property of properties(); track property){
+                            @for(property of listProperties(); track property){
                                 @if(property !== "index"){
                                     <flexi-grid-column [field]="property" />
                                 }

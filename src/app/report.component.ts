@@ -59,7 +59,7 @@ export class ReportComponent {
   readonly result = resource({
     request: this.endpoint,
     loader: async ({request}) => {
-      var res = await lastValueFrom(this.#http.get<any[]>(request));
+      var res = await lastValueFrom(this.#http.get<any>(request));
       return res;
     }
   })

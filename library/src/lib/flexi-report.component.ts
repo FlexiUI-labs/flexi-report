@@ -35,7 +35,7 @@ import { lastValueFrom } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FlexiReportComponent implements OnChanges {
-  readonly data = input<any[]>();
+  readonly data = input<any>();
   readonly language = input<"en" | "tr">("en");
   readonly report = input<ReportModel>();
   readonly editPath = input<string>();
@@ -50,7 +50,6 @@ export class FlexiReportComponent implements OnChanges {
   readonly aiSqlQueryRequest = signal<AISqlQueryRequestModel>(new AISqlQueryRequestModel());
   readonly sqlQuery = signal<string>("");
   readonly loadingSignal = linkedSignal(() => this.loading());
-  readonly dataString = computed(() => JSON.stringify(this.data()) ?? "");
   readonly zoomValue = linkedSignal<number>(() => this.isPreview() ? 1 : 0.8);
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
@@ -59,11 +58,14 @@ export class FlexiReportComponent implements OnChanges {
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
-  readonly properties = computed(() => this.getObjectProperties(this.data() ?? []));
+  readonly listProperties = computed(() => this.getListObjectProperties(this.listData() ?? []));
+  readonly singleProperties = computed(() => this.getSingleObjectProperties(this.singleData() ?? {}));
   readonly showProperties = signal<boolean>(false);
   readonly showPageSettings = signal<boolean>(false);
   readonly showElements = signal<boolean>(true);
 
+  readonly singleData = computed(() => this.processData(this.data()).singleData);
+  readonly listData = computed(() => this.processData(this.data()).listData);
   readonly pageSettingsText = computed(() => this.language() === "en" ? "Page Settings" : "Sayfa Ayarları");
   readonly pageSizeText = computed(() => this.language() === "en" ? "Page Size" : "Sayfa Boyutu");
   readonly pageOrientationText = computed(() => this.language() === "en" ? "Page Orientation" : "Sayfa Yönlendirme");
@@ -119,6 +121,27 @@ export class FlexiReportComponent implements OnChanges {
     }
   }
 
+  processData(data: any) {
+    let singleData: any = null;
+    let listData: any[] = [];
+
+    if (Array.isArray(data)) {
+      listData = data;
+    } else if (typeof data === "object" && data !== null) {
+      singleData = { ...data };
+
+      for (const key in singleData) {
+        if (Array.isArray(singleData[key])) {
+          listData = singleData[key];
+          delete singleData[key];
+          break;
+        }
+      }
+    }
+
+    return { singleData, listData };
+  }
+
   attachClickListener(newElement: HTMLElement, type: string) {
     this.#renderer.listen(newElement, 'click', () => {
       this.clearAllSelectedClass();
@@ -142,7 +165,8 @@ export class FlexiReportComponent implements OnChanges {
         margin: newElement.style.margin || "0px",
         borderRadius: newElement.style.borderRadius || "0px",
         fontWeight: newElement.style.fontWeight || "normal",
-        textDecoration: newElement.style.textDecoration || "none"
+        textDecoration: newElement.style.textDecoration || "none",
+        property: newElement.getAttribute("data-property") || ""
       });
       if (type === "table") {
         const th = newElement.querySelector("th");
@@ -325,7 +349,21 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   preview() {
-    this.prepareTableBind();
+    if(this.singleData()){
+      const els = this.pdfArea().nativeElement.querySelectorAll("[data-property]");
+      els.forEach((el:HTMLElement) => {
+        const property = el.getAttribute("data-property") || "";
+        const value = el.innerText;
+        if(property){
+          el.innerText = this.singleData()[property];
+          el.setAttribute("data-value", value);
+        }
+      });
+    }
+
+    if(this.listData().length > 0){
+      this.prepareTableBind();
+    }
   }
 
   prepareTableBind() {
@@ -367,7 +405,7 @@ export class FlexiReportComponent implements OnChanges {
         fontSize: th.style.fontSize,
       }));
 
-      this.data()!.forEach((res, i) => {
+      this.listData()!.forEach((res, i) => {
         const row = this.#renderer.createElement("tr");
         row.classList.add("remove-after");
 
@@ -388,7 +426,7 @@ export class FlexiReportComponent implements OnChanges {
         this.#renderer.appendChild(tbody, row);
       });
 
-      if (table.getAttribute("data-show-footer") === "true" && this.data()) {
+      if (table.getAttribute("data-show-footer") === "true" && this.listData()) {
         const tfoot = this.#renderer.createElement("tfoot");
         const footerRow = this.#renderer.createElement("tr");
         this.#renderer.appendChild(tfoot, footerRow);;
@@ -398,16 +436,16 @@ export class FlexiReportComponent implements OnChanges {
           let value = header.footerValue;
           if (value === "sum") {
             let total = 0;
-            this.data()!.forEach(res => {
+            this.listData()!.forEach(res => {
               total += +res[header.property];
             })
             value = this.formatValue(total.toString(), header.format);
           } else if (value === "average") {
             let total = 0;
-            this.data()!.forEach(res => {
+            this.listData()!.forEach(res => {
               total += +res[header.property];
             })
-            total = total / this.data()!.length
+            total = total / this.listData()!.length
             value = this.formatValue(total.toString(), header.format);
           }
           const theadTH = headers[index];
@@ -459,6 +497,12 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   clear() {
+    const els = this.pdfArea().nativeElement.querySelectorAll("[data-property]");
+    els.forEach((el: HTMLElement) => {
+      const value = el.getAttribute("data-value") || "No value";
+      el.innerText = value
+    });
+
     const tables = this.pdfArea().nativeElement.querySelectorAll("table");
     tables.forEach((table: HTMLElement) => {
       const theads = table.querySelectorAll("thead th") as NodeListOf<HTMLElement>;
@@ -556,7 +600,7 @@ export class FlexiReportComponent implements OnChanges {
     this.clearAllSelectedClass();
   }
 
-  getObjectProperties(data: any[], prefix = ""): string[] {
+  getListObjectProperties(data: any[], prefix = ""): string[] {
     if (!data || data.length === 0) return [];
 
     const properties: string[] = ["index"];
@@ -581,6 +625,31 @@ export class FlexiReportComponent implements OnChanges {
 
     return properties;
   }
+
+  getSingleObjectProperties(data: any, prefix = ""): string[] {
+    if (!data || typeof data !== "object") return [];
+
+    const properties: string[] = [];
+
+    function extractProperties(obj: any, parentKey = "") {
+      if (!obj || typeof obj !== "object") return;
+
+      for (const key of Object.keys(obj)) {
+        const newKey = parentKey ? `${parentKey}.${key}` : key;
+        properties.push(newKey);
+
+        const value = obj[key];
+        if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+          extractProperties(value, newKey);
+        }
+      }
+    }
+
+    extractProperties(data);
+
+    return properties;
+  }
+
 
   getTableHeads(element: HTMLElement) {
     const headers: TableSettingModel[] = [];
@@ -905,5 +974,15 @@ export class FlexiReportComponent implements OnChanges {
 
     this.sqlQueryLoadingSignal.set(false);
     this.sqlQuery.set(res.choices[0].message.content);
+  }
+
+  setProperty(event: any) {
+    const value = event.target.value;
+
+    if (value) {
+      this.style.selectedElement()?.setAttribute("data-property", value);
+    } else {
+      this.style.selectedElement()?.removeAttribute("data-property");
+    }
   }
 }
