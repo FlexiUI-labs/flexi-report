@@ -175,7 +175,6 @@
     display: flex;
     justify-content: center;
     gap: 10px;
-    padding-top: 10px;
 }
 
 .flexi-report-setting-close-btn {
@@ -229,13 +228,17 @@
     position: absolute;
     width: 600px;
     height: 550px;
-    background-color: #f1f1f1;
+    background-color: #fff;
     top: 100px;
     left: auto;
     right: 50%;
     border: 1px solid;
     border-radius: 20px;
     z-index: 1;
+}
+
+.flexi-report-data-result:hover{
+    background-color: #fff !important;
 }
 
 .flexi-report-data-result ngx-json-viewer {
@@ -262,7 +265,6 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 5px;
-    height: 200px;
     margin-bottom: 5px;
 }
 
@@ -367,4 +369,46 @@
 
 .flexi-report-properties-strong {
     font-size: 14px;
+}
+
+.flexi-report-pdf-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    position: relative;
+}
+
+.flexi-report-pdf-wrapper {
+    border: 1px solid #ddd;
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: auto;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    position: relative;
+    transform-origin: top left;
+}
+
+.flexi-report-pdf-content {
+    position: relative;
+    width: 100%;
+    height: auto;
+}
+
+.flexi-report-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
 }
