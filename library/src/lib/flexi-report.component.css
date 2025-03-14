@@ -172,7 +172,7 @@
 }
 
 .flexi-report-sql-query {
-    display: block;
+    display: none;
     cursor: pointer;
     position: absolute;
     width: 80vw;
