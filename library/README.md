@@ -4,7 +4,7 @@ Flexi Report is a dynamic Angular standalone component designed to easily create
 
 ## Live Demo
 
-Check out a live demo on StackBlitz.
+Check out a live demo on <a href="https://bolt.new/~/stackblitz-starters-1e3ed8qu">StackBlitz</a>.
 
 ## Features
 
@@ -15,6 +15,10 @@ Check out a live demo on StackBlitz.
 - **AI Integration**: Generate SQL queries using OpenAI integration for optimized database queries.
 - **PDF Export and Print**: Export reports as PDF files or print directly from the interface with configurable padding and layout.
 - **Drag & Drop Support**: Rearrange table headers and form elements using Angular CDK DragDrop.
+- **Page Configuration**: Customize page size (A4, A5, A6), orientation (portrait, landscape), background color, and fonts.
+- **Request Forms**: Define input fields like text, date, and select options to generate dynamic request forms for filtering reports.
+- **Data Binding**: Supports binding elements to API endpoints or manually entered SQL queries for dynamic content population.
+- **Excel Export**: Export report data directly to an Excel file.
 
 ## Installation
 
@@ -81,19 +85,22 @@ Use it in your template:
 
 ## Supported Elements
 
-- Headings (`H1`)
-- Paragraphs (`P`)
-- Images (`IMG`)
-- Tables (`TABLE`)
-- Horizontal Rules (`HR`)
-- Form Elements (`Input`, `Select`, `Date` fields)
+- Div (`DIV`)
+- Head (`H1`)
+- Span (`SPAN`)
+- Horizontal Line (`DIV`)
+- Vertical Line (`DIV`)
+- HR (`HR`)
+- Image (`IMG`)
+- Table (`TABLE`)
 
 ## Page Configuration
 
 - **Sizes**: A4, A5, A6
 - **Orientation**: Portrait, Landscape
-- **Fonts**: Customizable font families, sizes, and weights through Google Fonts
-- **Padding**: Configurable padding for PDF export (default: 20px)
+- **Background Colors**: Selectable background color for reports.
+- **Fonts**: Customizable font families, sizes, and weights through Google Fonts.
+- **Grill Display**: Toggle grid visibility for alignment.
 
 ## AI-Generated SQL Queries
 
@@ -104,6 +111,13 @@ Flexi Report allows AI-powered SQL query generation using OpenAI. Provide an API
 - Rearrange **table headers** and **form elements** dynamically using drag-and-drop.
 - Move elements within the report layout easily.
 - Dedicated **drag handle** for table headers to prevent accidental rearrangements.
+- Drag & drop functionality for **report styling panel**.
+
+## Export Features
+
+- **PDF Export**: Save reports as PDFs with formatted content.
+- **Excel Export**: Export report data directly to an Excel file.
+- **JSON Import/Export**: Load and save reports as JSON files.
 
 ## Contributing
 
@@ -112,4 +126,3 @@ Contributions are welcome! Please open an issue or submit a pull request.
 ## License
 
 MIT
-
