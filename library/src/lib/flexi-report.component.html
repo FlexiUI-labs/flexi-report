@@ -119,11 +119,15 @@
                 <flexi-button btnColor="light" btnSize="small" btnIcon="add" (click)="zoomIn()" />
             </div>
             <div class="flexi-report-setting-button-container">
-                @if(isPreview()){
+                @if(isPreview() && showEditButtn()){
                     <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
-                }@else{
+                }
+                @if(!isPreview()){
                     <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
-                    <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport()" btnWidth="100%" />
+                    <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport('save')" btnWidth="100%" />
+                    <flexi-button btnColor="teal" [title]="downloadAsJsonText()" flexiTooltip="top" btnIcon="browser_updated" (click)="saveReport('download')" btnWidth="100%" />
+                    <input type="file" accept=".json" (change)="uploadReport($event)" style="display: none;" #fileInput>
+                    <flexi-button btnColor="primary" [title]="updateJsonText()" btnIcon="drive_folder_upload" (click)="fileInput.click()" />
                     <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
                     <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
                     <flexi-button btnColor="pink" [title]="openSqlQueryPartText()" flexiTooltip="top" btnIcon="query_stats" (click)="openSqlQueryPart()" />
@@ -139,9 +143,9 @@
                 }@else {
                     <flexi-button btnColor="secondary" [title]="getReportText()" flexiTooltip="top" btnIcon="search" (click)="sendRequest(form)" />
                 }
-                <flexi-button btnColor="success" [title]="donwloadAsPDFText()" flexiTooltip="top" btnIcon="browser_updated" (click)="downloadAsPDF()" />
+                <flexi-button btnColor="success" [title]="donwloadAsPDFText()" flexiTooltip="top" btnIcon="picture_as_pdf" (click)="downloadAsPDF()" />
                 <flexi-button btnColor="dark" [title]="printText()" flexiTooltip="top" btnIcon="print" (click)="print()" />
-                <flexi-button btnColor="success" [title]="exportToExcelText()" btnIcon="file_download" (click)="exportToExcel()" />
+                <flexi-button btnColor="success" [title]="exportToExcelText()" flexiTooltip="top" btnIcon="file_export" (click)="exportToExcel()" />
             </div>
         </div>
         <div class="flexi-report-pdf-container" [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">

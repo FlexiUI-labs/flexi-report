@@ -50,8 +50,9 @@ export class FlexiReportComponent implements OnChanges {
   readonly sqlQueryLoading = input<boolean>(false);
   readonly tablesData = input<any[]>();
   readonly openAPIKey = input<string>();
+  readonly showEditButtn = input<boolean>(true);
 
-  readonly showGrill = signal<boolean>(true);
+  readonly showGrill = signal<boolean>(false);
   readonly date = signal<string>(this.getNowDate());
   readonly requestElement = signal<RequestElementModel>(initilizeRequestElementModel);
   readonly showAIHelpQuery = signal<boolean>(false);
@@ -117,9 +118,13 @@ export class FlexiReportComponent implements OnChanges {
   readonly noRequestElementsText = computed(() => this.language() === "en" ? "No request elements added" : "İstek için eklenen bir element yok");
   readonly openRequestParamsText = computed(() => this.language() === "en" ? "Open request params form" : "İstek formunu aç");
   readonly getReportText = computed(() => this.language() === "en" ? "Get report" : "Raporu getir");
-  readonly exportToExcelText = computed(() => this.language() === "en" ? "Export to Excel" : "Excel'i İndir");
+  readonly exportToExcelText = computed(() => this.language() === "en" ? "Export to Excel" : "Excel'e Aktar");
   readonly pageBackgroundColorText = computed(() => this.language() === "en" ? "Page BG Color" : "Page BG Color");
   readonly showGrillText = computed(() => this.language() === "en" ? "Show Grill" : "Izgara Görünümü");
+  readonly downloadAsJsonText = computed(() => this.language() === "en" ? "Download as JSON" : "Raporu JSON olarak İndir");
+  readonly updateJsonText = computed(() => this.language() === "en" ? "Upload report as JSON" : "Raporu JSON olarak yükle");
+  readonly reportUploadSucceedText = computed(() => this.language() === "en" ? "Report upload successful" : "Rapor başarıyla yüklendi");
+  readonly reportUploadFailedText = computed(() => this.language() === "en" ? "Report upload failed" : "Raporu yükleme başarısız oldu");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -601,7 +606,6 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   clear() {
-    this.showGrill.set(true);
     const els = this.pdfArea().nativeElement.querySelectorAll("[data-property], [data-calculation]");
     els.forEach((el: HTMLElement) => {
       const value = el.getAttribute("data-value") || "No value";
@@ -869,7 +873,7 @@ export class FlexiReportComponent implements OnChanges {
     }
   }
 
-  saveReport() {
+  saveReport(type: "save" | "download") {
     if (!this.pdfArea()) return;
 
     this.clearAllSelectedClass();
@@ -882,8 +886,31 @@ export class FlexiReportComponent implements OnChanges {
       content: reportContent,
       sqlQuery: this.reportSignal().sqlQuery
     }));
-    this.onSave.emit(this.reportSignal());
+
+    if (type === "save") {
+      this.onSave.emit(this.reportSignal());
+    }
+
+    if (type === "download") {
+      this.downloadJSON(this.reportSignal(), "report.json");
+    }
+
   }
+
+  downloadJSON(data: any, filename: string) {
+    const jsonStr = JSON.stringify(data, null, 2); // JSON formatına çevir
+    const blob = new Blob([jsonStr], { type: "application/json" }); // Blob oluştur
+    const url = URL.createObjectURL(blob); // URL oluştur
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename; // Dosya adını belirle
+    document.body.appendChild(a);
+    a.click(); // Tıklama olayı tetikle
+    document.body.removeChild(a); // DOM'dan kaldır
+    URL.revokeObjectURL(url); // Bellek temizleme
+  }
+
 
   loadReport() {
     if (!this.pdfArea() || !this.reportSignal()) return;
@@ -1228,5 +1255,31 @@ export class FlexiReportComponent implements OnChanges {
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const data: Blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Report.xlsx");
+  }
+
+  uploadReport(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const jsonData = JSON.parse(e.target?.result as string);
+
+        this.reportSignal.set(jsonData);
+        this.changePageSetting();
+
+        if (this.elementArea() && jsonData.content) {
+          this.elementArea().nativeElement.innerHTML = jsonData.content;
+          this.restoreDragFeature();
+        }
+
+        alert(this.reportUploadSucceedText());
+      } catch (error) {
+        alert(this.reportUploadFailedText());
+      }
+    };
+
+    reader.readAsText(file);
   }
 }
