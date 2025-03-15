@@ -20,6 +20,7 @@ import { RequestModel } from './models/request.model';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ElementModel } from '../public-api';
+import { evaluate } from "mathjs";
 
 @Component({
   selector: 'flexi-report',
@@ -60,14 +61,15 @@ export class FlexiReportComponent implements OnChanges {
   readonly pageSetting = signal<{ width: string, height: string }>({ width: "794px", height: "1123px" });
   readonly reportSignal = linkedSignal(() => this.report() ?? new ReportModel());
   readonly elements = signal<ElementModel[]>([
-    {name: "div", title: "DIV"},
-    {name: "h1", title: "HEAD"},
-    {name: "span", title: "SPAN"},
-    {name: "horizontal-line", title: "HORIZONTAL LINE"},
-    {name: "vertical-line", title: "VERTICAL LINE"},
-    {name: "hr", title: "HR"},
-    {name: "img", title: "IMG"},
-    {name: "table", title: "TABLE"}
+    { name: "div", title: "DIV" },
+    { name: "h1", title: "HEAD" },
+    { name: "span", title: "SPAN" },
+    { name: "horizontal-line", title: "HORIZONTAL LINE" },
+    { name: "vertical-line", title: "VERTICAL LINE" },
+    { name: "hr", title: "HR" },
+    { name: "img", title: "IMG" },
+    // { name: "icon", title: "ICON"},
+    { name: "table", title: "TABLE" }
   ]);
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
@@ -202,7 +204,8 @@ export class FlexiReportComponent implements OnChanges {
         borderRadius: newElement.style.borderRadius || "0px",
         fontWeight: newElement.style.fontWeight || "normal",
         textDecoration: newElement.style.textDecoration || "none",
-        property: newElement.getAttribute("data-property") || ""
+        property: newElement.getAttribute("data-property") || "",
+        calculation: newElement.getAttribute("data-calculation") || ""
       });
       if (type === "table") {
         const th = newElement.querySelector("th");
@@ -246,6 +249,8 @@ export class FlexiReportComponent implements OnChanges {
       newElement = this.createHr();
     } else if (type === "img") {
       newElement = this.createImage();
+    } else if (type === "icon") {
+      newElement = this.createIcon();
     } else if (type === "table") {
       newElement = this.createTable();
     }
@@ -285,9 +290,16 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setStyle(div, 'width', '100px');
     this.#renderer.setStyle(div, 'height', '150px');
     this.#renderer.setStyle(div, 'backgroundColor', '#2C3E50');
-    this.#renderer.setStyle(div, 'position', 'absolute');
-    this.#renderer.setStyle(div, 'z-index', '0');
     return div;
+  }
+
+  createIcon(): HTMLElement {
+    const span = this.#renderer.createElement("span") as HTMLElement;
+    span.innerText = "settings_accessibility"
+    this.#renderer.setStyle(span, 'display', 'inline-block');
+    this.#renderer.addClass(span, 'material-symbols-outlined');
+    this.#renderer.setAttribute(span, "data-name", "icon");
+    return span;
   }
 
   createLine(orientation: 'horizontal' | 'vertical'): HTMLElement {
@@ -298,16 +310,16 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.addClass(line, 'draggable'); // Sürükleme için
 
     if (orientation === 'horizontal') {
-        this.#renderer.setStyle(line, 'width', '100px');
-        this.#renderer.setStyle(line, 'height', '2px'); // İnce çizgi
+      this.#renderer.setStyle(line, 'width', '100px');
+      this.#renderer.setStyle(line, 'height', '2px'); // İnce çizgi
     } else {
-        this.#renderer.setStyle(line, 'width', '2px'); // İnce çizgi
-        this.#renderer.setStyle(line, 'height', '100px');
+      this.#renderer.setStyle(line, 'width', '2px'); // İnce çizgi
+      this.#renderer.setStyle(line, 'height', '100px');
     }
 
     this.attachClickListener(line, 'line');
     return line;
-}
+  }
 
   createHr(): HTMLElement {
     const hr = this.#renderer.createElement("hr");
@@ -418,18 +430,40 @@ export class FlexiReportComponent implements OnChanges {
 
   preview() {
     if (this.singleData()) {
-      const els = this.pdfArea().nativeElement.querySelectorAll("[data-property]");
+      const els = this.pdfArea().nativeElement.querySelectorAll("[data-property], [data-calculation]");
       els.forEach((el: HTMLElement) => {
+        const calculation = el.getAttribute("data-calculation");
         const property = el.getAttribute("data-property") || "";
-        const value = el.innerText;
-        if (property) {
-          el.innerText = this.singleData()[property];
-          el.setAttribute("data-value", value);
+
+        let value: any = "";
+
+        if (calculation) {
+          value = this.calculateFormula(this.singleData(), calculation);
+          value = this.formatValue(value, "n");
+        } else if (property) {
+          value = this.getNestedValue(this.singleData(), property, "");
+          if (!isNaN(value)) value = Number(value).toLocaleString();
         }
+
+        el.innerText = value !== undefined ? value : "";
+        el.setAttribute("data-value", el.innerText);
       });
     }
 
     this.prepareTableBind();
+  }
+
+  calculateFormula(data: any, formula: string): number | string {
+    const formulaReplaced = formula.replace(/[a-zA-Z0-9_.]+/g, match => {
+      const val = this.getNestedValue(data, match.trim());
+      return !isNaN(val) && val !== "" ? val : '0';
+    });
+
+    try {
+      return evaluate(formulaReplaced);
+    } catch {
+      return "Nan";
+    }
   }
 
   prepareTableBind() {
@@ -563,7 +597,7 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   clear() {
-    const els = this.pdfArea().nativeElement.querySelectorAll("[data-property]");
+    const els = this.pdfArea().nativeElement.querySelectorAll("[data-property], [data-calculation]");
     els.forEach((el: HTMLElement) => {
       const value = el.getAttribute("data-value") || "No value";
       el.innerText = value
@@ -701,12 +735,13 @@ export class FlexiReportComponent implements OnChanges {
       if (!obj || typeof obj !== "object") return;
 
       for (const key of Object.keys(obj)) {
-        const newKey = parentKey ? `${parentKey}.${key}` : key;
-        properties.push(newKey);
-
         const value = obj[key];
+        const newKey = parentKey ? `${parentKey}.${key}` : key;
+
         if (typeof value === "object" && value !== null && !Array.isArray(value)) {
           extractProperties(value, newKey);
+        } else {
+          properties.push(newKey);
         }
       }
     }
@@ -715,6 +750,7 @@ export class FlexiReportComponent implements OnChanges {
 
     return properties;
   }
+
 
 
   getTableHeads(element: HTMLElement) {
@@ -1049,6 +1085,16 @@ export class FlexiReportComponent implements OnChanges {
     }
   }
 
+  setCalculation(event: any) {
+    const value = event.target.value;
+
+    if (value) {
+      this.style.selectedElement()?.setAttribute("data-calculation", value);
+    } else {
+      this.style.selectedElement()?.removeAttribute("data-calculation");
+    }
+  }
+
   findFilterType(val: any): FilterType {
     const type = typeof (val);
     if (type === "number") return "number";
@@ -1092,13 +1138,22 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   sendRequest(form: NgForm) {
-    console.log(form.value);
-
     let data: RequestModel = new RequestModel();
 
     if (this.reportSignal().endpoint) {
       data.endpoint = this.reportSignal().endpoint;
       data.params = form.value;
+
+      Object.keys(form.value).forEach(key => {
+        let value = form.value[key];
+        if (value === '' || value === null || value === undefined) {
+          value = null;
+        } else if (!isNaN(value) && value.toString().trim() !== '') {
+          form.value[key] = +value
+        } else {
+          form.value[key] = value
+        }
+      });
 
       this.onSendRequest.emit(data);
     } else if (this.reportSignal().sqlQuery) {
@@ -1108,12 +1163,12 @@ export class FlexiReportComponent implements OnChanges {
         const regex = new RegExp(`{${key}}`, 'g');
         let value = form.value[key];
 
-        if (typeof value === 'string' && value.trim() !== '') {
-          value = `'${value}'`;
-        }
-
         if (value === '' || value === null || value === undefined) {
-          value = 'NULL';
+          value = null;
+        } else if (!isNaN(value) && value.toString().trim() !== '') {
+          value = value;
+        } else {
+          value = `'${value}'`;
         }
 
         query = query.replace(regex, value);
@@ -1155,8 +1210,8 @@ export class FlexiReportComponent implements OnChanges {
 
   exportToExcel() {
     if (!this.listData() || this.listData().length === 0) {
-        alert('No data available to export.');
-        return;
+      alert('No data available to export.');
+      return;
     }
 
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.listData());
@@ -1166,5 +1221,5 @@ export class FlexiReportComponent implements OnChanges {
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const data: Blob = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Report.xlsx");
-}
+  }
 }

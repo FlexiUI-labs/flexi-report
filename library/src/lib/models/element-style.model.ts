@@ -26,6 +26,7 @@ export interface ElementStyleModel {
     textDecoration?: string;
     showFooter?: boolean;
     property?: string;
+    calculation?: string;
   }
 
   export const initializeElementStyle: ElementStyleModel = {

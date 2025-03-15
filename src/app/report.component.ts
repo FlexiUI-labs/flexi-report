@@ -72,7 +72,11 @@ export class ReportComponent {
         res = await lastValueFrom(this.#http.post<any[]>("https://localhost:7032/execute-query", request));
       }else if(request.endpoint){
         const endpoint = request.endpoint;
-        res = await lastValueFrom(this.#http.post<any>(endpoint, request.params));
+        res = await lastValueFrom(this.#http.post<any>(endpoint, request.params, {
+          headers: {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJUQU5FUiBTQVlEQU0iLCJlbWFpbCI6InRhbmVyc2F5ZGFtQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2F1dGhlbnRpY2F0aW9uIjoiZjM5ZjA5MTctMWNmZi00MmI4LWIxOTQtNmYxNDk0ZjYzZmI5IiwiQ29tcGFueUlkIjoiN2JmNTYzZGEtNTE2Ni00MGJhLWE4NjEtMWJjNTQ4YTFhNjA5IiwibmJmIjoxNzQxODEzNjE3LCJleHAiOjE3NDQ0OTIwMTcsImlzcyI6Ind3dy5teXNpdGVtLmNvbSIsImF1ZCI6Ind3dy55b3Vyc2l0ZS5jb20ifQ.hXkR9FDiF_b_dktUGpEeJQcuCWSQ8D64hYwBRUcvuRg"
+          }
+        }));
       }
 
       return res;

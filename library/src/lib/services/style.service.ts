@@ -1,5 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { ElementStyleModel, initializeElementStyle } from '../models/element-style.model';
+import { iconNames } from '../icon-names';
 
 @Injectable({
   providedIn: 'root'
@@ -7,7 +8,8 @@ import { ElementStyleModel, initializeElementStyle } from '../models/element-sty
 export class StyleService {
   readonly selectedElement = signal<HTMLElement | null>(null);
   readonly elementStyle = signal<ElementStyleModel>(initializeElementStyle);
-  readonly elementType = computed(() => this.selectedElement()?.tagName ?? "");
+  readonly elementType = computed(() => this.selectedElement()?.tagName || "");
+  readonly elementName = computed(() => this.selectedElement()?.getAttribute("data-name") || this.selectedElement()?.tagName || "");
   readonly fontFamilies = signal<string[]>([
     "Roboto",
     // "Arial",
@@ -49,6 +51,7 @@ export class StyleService {
     "none",
     "scale-down"
   ]);
+  readonly iconNames = signal<string[]>(iconNames);
 
   changeElementText() {
     this.selectedElement()!.innerText = this.elementStyle().text;

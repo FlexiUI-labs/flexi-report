@@ -173,11 +173,23 @@
             </div>
             <div style="max-height: 500px; overflow: auto; padding-right: 25px;">
                 <table style="text-align: left; margin-bottom: 5px;" (mousedown)="$event.stopPropagation()">
-                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG" && style.elementType() !== "DIV"){
+                    @if(style.elementType() !== "TABLE" && style.elementType() !== "IMG" && style.elementType() !== "DIV" && style.elementName() !== "icon"){
                         <tr>
                             <th>Text</th>
                             <td>
                                 <input class="flexi-report-input" [(ngModel)]="style.elementStyle().text" (input)="style.changeElementText()" />
+                            </td>
+                        </tr>
+                    }
+                    @if(style.elementName() === "icon"){
+                        <tr>
+                            <th>Icon</th>
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="style.elementStyle().text" (change)="style.changeElementText()">
+                                    @for(val of style.iconNames(); track val){
+                                        <option>{{val}}</option>
+                                    }
+                                </select>
                             </td>
                         </tr>
                     }
@@ -333,6 +345,12 @@
                                         <option>{{val}}</option>
                                         }
                                     </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Calculation</th>
+                                <td>
+                                    <input class="flexi-report-input" [(ngModel)]="style.elementStyle().calculation" (change)="setCalculation($event)" placeholder="Calculation (ex: debit - credit)" />
                                 </td>
                             </tr>
                         }
