@@ -357,7 +357,7 @@ export class FlexiReportComponent implements OnChanges {
       const th = this.#renderer.createElement("th");
       this.#renderer.appendChild(th, this.#renderer.createText(`Header ${i + 1}`));
       this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
-      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'dotted');
+      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'solid');
       this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
       this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
       this.#renderer.setStyle(th, 'padding', '5px');
@@ -374,7 +374,7 @@ export class FlexiReportComponent implements OnChanges {
         const td = this.#renderer.createElement("td");
         this.#renderer.appendChild(td, this.#renderer.createText(`Example ${i + 1}`));
         this.#renderer.setStyle(td, 'border-width', '1px');
-        this.#renderer.setStyle(td, 'border-style', 'dotted');
+        this.#renderer.setStyle(td, 'border-style', 'solid');
         this.#renderer.setStyle(td, 'border-color', 'black');
         this.#renderer.setStyle(td, 'font-size', '10px');
         this.#renderer.setStyle(td, 'padding', '5px');
@@ -528,6 +528,7 @@ export class FlexiReportComponent implements OnChanges {
           cell.style.borderColor = tdBorderColor;
           cell.style.fontSize = tdFontSize;
           cell.style.textAlign = header.textAlign;
+          cell.style.padding = "5px";
           let value = header.property ? (header.property === "index" ? i + 1 : this.getNestedValue(res, header.property) || "") : "";
           if (header.format) {
             value = this.formatValue(value, header.format);
@@ -563,11 +564,12 @@ export class FlexiReportComponent implements OnChanges {
           const theadTH = headers[index];
           this.#renderer.appendChild(footerCell, this.#renderer.createText(value));
           this.#renderer.setStyle(footerCell, 'border-width', theadTH.borderWidth || '1px');
-          this.#renderer.setStyle(footerCell, 'border-style', theadTH.borderStyle || 'dotted');
+          this.#renderer.setStyle(footerCell, 'border-style', theadTH.borderStyle || 'solid');
           this.#renderer.setStyle(footerCell, 'border-color', theadTH.borderColor || 'black');
           this.#renderer.setStyle(footerCell, 'text-align', theadTH.textAlign || 'start');
           this.#renderer.setStyle(footerCell, 'font-weight', 'bold');
           this.#renderer.setStyle(footerCell, 'font-size', theadTH.fontSize || '11px');
+          this.#renderer.setStyle(footerCell, 'padding', '5px');
           this.#renderer.appendChild(footerRow, footerCell);
         });
 
@@ -641,7 +643,7 @@ export class FlexiReportComponent implements OnChanges {
           const td = this.#renderer.createElement("td");
           this.#renderer.appendChild(td, this.#renderer.createText(`Example ${i + 1}`));
           this.#renderer.setStyle(td, 'border-width', tbodyTD?.style.borderWidth || '1px');
-          this.#renderer.setStyle(td, 'border-style', tbodyTD?.style.borderStyle || 'dotted');
+          this.#renderer.setStyle(td, 'border-style', tbodyTD?.style.borderStyle || 'solid');
           this.#renderer.setStyle(td, 'border-color', tbodyTD?.style.borderColor || 'black');
           this.#renderer.setStyle(td, 'font-size', tbodyTD?.style.fontSize || '10px');
           this.#renderer.setStyle(td, 'padding', tbodyTD?.style.padding || '5px');
@@ -660,7 +662,7 @@ export class FlexiReportComponent implements OnChanges {
           const th = this.#renderer.createElement("th");
           const theadTH = theads[i];
           this.#renderer.setStyle(th, 'border-width', theadTH.style.borderWidth || '1px');
-          this.#renderer.setStyle(th, 'border-style', theadTH.style.borderWidth || 'dotted');
+          this.#renderer.setStyle(th, 'border-style', theadTH.style.borderWidth || 'solid');
           this.#renderer.setStyle(th, 'border-color', theadTH.style.borderColor || 'black');
           this.#renderer.setStyle(th, 'text-align', theadTH.style.textAlign || 'black');
           this.#renderer.setStyle(th, 'font-size', theadTH.style.fontSize || '11px');
@@ -689,7 +691,7 @@ export class FlexiReportComponent implements OnChanges {
       for (let i = 0; i < ths.length; i++) {
         const th = this.#renderer.createElement("th");
         this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
-        this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'dotted');
+        this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'solid');
         this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
         this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
         this.#renderer.setStyle(th, 'padding', '5px');
@@ -813,7 +815,7 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.appendChild(th, this.#renderer.createText(head.value));
       this.#renderer.setStyle(th, 'padding', '5px');
       this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
-      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'dotted');
+      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'solid');
       this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
       this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
       this.#renderer.setStyle(th, 'width', head.width);
@@ -844,7 +846,7 @@ export class FlexiReportComponent implements OnChanges {
       trs.forEach(row => {
         const td = this.#renderer.createElement("td");
         this.#renderer.setStyle(td, 'border-width', this.style.elementStyle().tdBorderWidth || '1px');
-        this.#renderer.setStyle(td, 'border-style', this.style.elementStyle().tdBorderStyle || 'dotted');
+        this.#renderer.setStyle(td, 'border-style', this.style.elementStyle().tdBorderStyle || 'solid');
         this.#renderer.setStyle(td, 'border-color', this.style.elementStyle().tdBorderColor || 'black');
         this.#renderer.setStyle(td, 'font-size', this.style.elementStyle().tdFontSize || '10px');
         this.#renderer.setStyle(td, 'padding', '5px');
@@ -859,7 +861,7 @@ export class FlexiReportComponent implements OnChanges {
       const tr = tfoot.querySelector("tfoot tr");
       const th = this.#renderer.createElement("th");
       this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().thBorderWidth || '1px');
-      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'dotted');
+      this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().thBorderStyle || 'solid');
       this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().thBorderColor || 'black');
       this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '10px');
       this.#renderer.setStyle(th, 'padding', '5px');

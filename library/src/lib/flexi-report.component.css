@@ -1,6 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap');
 
+.flexi-report-container {
+    position: relative;
+    display: flex;
+    gap: 20px;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
 .flexi-report-cursor {
     cursor: pointer;
 }
@@ -517,36 +524,6 @@
     padding: 10px;
 }
 
-.flexi-report-form-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.flexi-report-card {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    position: relative;
-}
-
-.flexi-report-card-body {
-    display: flex;
-}
-
-.flexi-report-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    font-size: 14px;
-    color: #333;
-}
-
 .flexi-report-submit-container {
     text-align: center;
     margin-top: 15px;
@@ -601,12 +578,10 @@
     height: 100%;
 }
 
-/* Checkbox'ı gizle */
 .flexi-report-checkbox {
     display: none;
 }
 
-/* Toggle Switch Alanı */
 .flexi-report-toggle-switch {
     position: relative;
     display: inline-block;
@@ -618,7 +593,6 @@
     cursor: pointer;
 }
 
-/* İçindeki Hareketli Düğme */
 .flexi-report-toggle-switch::after {
     content: "";
     position: absolute;
@@ -631,11 +605,24 @@
     transition: 0.3s;
 }
 
-/* Checkbox İşaretlendiğinde Arka Plan ve Konumu Değiştir */
-.flexi-report-checkbox:checked + .flexi-report-toggle-switch {
+.flexi-report-checkbox:checked+.flexi-report-toggle-switch {
     background-color: #4CAF50;
 }
 
-.flexi-report-checkbox:checked + .flexi-report-toggle-switch::after {
+.flexi-report-checkbox:checked+.flexi-report-toggle-switch::after {
     left: 22px;
+}
+
+.flex-report-request-form-part {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 300px;
+    border-right: 1px solid;
+    padding-right: 15px;
+    height: auto;
+}
+
+.flex-report-request-form-title {
+    font-size: 20px;
 }

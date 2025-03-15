@@ -1,5 +1,4 @@
 .body-content{
-    width: 100% !important;
     margin-left: 280px;
 }
 
@@ -9,7 +8,6 @@
     }
 
     .body-content{
-        max-width: 98.5vw;
         margin-left: 0px;
     }
 }
