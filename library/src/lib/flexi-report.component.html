@@ -72,6 +72,15 @@
                                     </select>
                                 </td>
                             </tr>
+                            <tr>
+                                <th>{{ showGrillText() }}</th>
+                                <td>
+                                    <label>
+                                        <input class="flexi-report-checkbox" type="checkbox" [(ngModel)]="showGrill" name="showGrill" />
+                                        <span class="flexi-report-toggle-switch"></span>
+                                    </label>
+                                </td>
+                            </tr>
                         </table>
                     </div>
                     <div>
@@ -156,7 +165,7 @@
                             </div>
                         }
                     }
-                  <div #pdfArea class="flexi-report-pdf-content">
+                  <div #pdfArea class="flexi-report-pdf-content" [ngClass]="showGrill() ? 'flexi-report-pdf-content-grid' : ''">
                     <div #elementArea></div>
                   </div>
             </div>
@@ -416,7 +425,10 @@
                         <tr>
                             <th>{{showFooterText()}}</th>
                             <td>
-                                <input type="checkbox" id="showFooterCheckbox" [checked]="style.showFooter()" (change)="changeShowFooter($event)" />
+                                <label>
+                                    <input class="flexi-report-checkbox" type="checkbox" id="showFooterCheckbox" [checked]="style.showFooter()" (change)="changeShowFooter($event)" />
+                                    <span class="flexi-report-toggle-switch"></span>
+                                </label>
                             </td>
                         </tr>
                     }

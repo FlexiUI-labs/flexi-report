@@ -593,3 +593,49 @@
         flex-direction: column;
     }
 }
+
+.flexi-report-pdf-content-grid {
+    background-image: linear-gradient(to right, #ccc 1px, transparent 1px),
+        linear-gradient(to bottom, #ccc 1px, transparent 1px);
+    background-size: 10px 10px;
+    height: 100%;
+}
+
+/* Checkbox'ı gizle */
+.flexi-report-checkbox {
+    display: none;
+}
+
+/* Toggle Switch Alanı */
+.flexi-report-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 20px;
+    transition: background 0.3s;
+    cursor: pointer;
+}
+
+/* İçindeki Hareketli Düğme */
+.flexi-report-toggle-switch::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: 0.3s;
+}
+
+/* Checkbox İşaretlendiğinde Arka Plan ve Konumu Değiştir */
+.flexi-report-checkbox:checked + .flexi-report-toggle-switch {
+    background-color: #4CAF50;
+}
+
+.flexi-report-checkbox:checked + .flexi-report-toggle-switch::after {
+    left: 22px;
+}

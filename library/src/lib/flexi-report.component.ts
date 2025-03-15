@@ -51,6 +51,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly tablesData = input<any[]>();
   readonly openAPIKey = input<string>();
 
+  readonly showGrill = signal<boolean>(true);
   readonly date = signal<string>(this.getNowDate());
   readonly requestElement = signal<RequestElementModel>(initilizeRequestElementModel);
   readonly showAIHelpQuery = signal<boolean>(false);
@@ -118,6 +119,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly getReportText = computed(() => this.language() === "en" ? "Get report" : "Raporu getir");
   readonly exportToExcelText = computed(() => this.language() === "en" ? "Export to Excel" : "Excel'i İndir");
   readonly pageBackgroundColorText = computed(() => this.language() === "en" ? "Page BG Color" : "Page BG Color");
+  readonly showGrillText = computed(() => this.language() === "en" ? "Show Grill" : "Izgara Görünümü");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -389,6 +391,7 @@ export class FlexiReportComponent implements OnChanges {
   async downloadAsPDF() {
     if (!this.pdfArea()) return;
 
+    this.showGrill.set(false);
     this.pdfArea().nativeElement.style.backgroundColor = this.reportSignal().backgroundColor || "#ffffff";
 
     this.preview();
@@ -429,6 +432,7 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   preview() {
+    this.showGrill.set(false);
     if (this.singleData()) {
       const els = this.pdfArea().nativeElement.querySelectorAll("[data-property], [data-calculation]");
       els.forEach((el: HTMLElement) => {
@@ -597,6 +601,7 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   clear() {
+    this.showGrill.set(true);
     const els = this.pdfArea().nativeElement.querySelectorAll("[data-property], [data-calculation]");
     els.forEach((el: HTMLElement) => {
       const value = el.getAttribute("data-value") || "No value";
@@ -1213,6 +1218,8 @@ export class FlexiReportComponent implements OnChanges {
       alert('No data available to export.');
       return;
     }
+
+    this.showGrill.set(false);
 
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.listData());
     const workbook: XLSX.WorkBook = XLSX.utils.book_new();
