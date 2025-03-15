@@ -295,8 +295,11 @@ export class FlexiReportComponent implements OnChanges {
     const div = this.#renderer.createElement("div");
     this.#renderer.setStyle(div, 'display', 'block');
     this.#renderer.setStyle(div, 'width', '100px');
-    this.#renderer.setStyle(div, 'height', '150px');
-    this.#renderer.setStyle(div, 'backgroundColor', '#2C3E50');
+    this.#renderer.setStyle(div, 'height', '100px');
+    this.#renderer.setStyle(div, 'border-width', '1px');
+    this.#renderer.setStyle(div, 'border-style', 'solid');
+    this.#renderer.setStyle(div, 'border-color', '#000000');
+    this.#renderer.setStyle(div, 'backgroundColor', '#ffffff');
     return div;
   }
 

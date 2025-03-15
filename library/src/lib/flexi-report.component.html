@@ -130,7 +130,9 @@
                     <flexi-button btnColor="primary" [title]="updateJsonText()" btnIcon="drive_folder_upload" (click)="fileInput.click()" />
                     <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
                     <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
-                    <flexi-button btnColor="pink" [title]="openSqlQueryPartText()" flexiTooltip="top" btnIcon="query_stats" (click)="openSqlQueryPart()" />
+                    @if(!reportSignal().endpoint){
+                        <flexi-button btnColor="pink" [title]="openSqlQueryPartText()" flexiTooltip="top" btnIcon="query_stats" (click)="openSqlQueryPart()" />
+                    }
                 }
                 @if(!isPreview() && reportSignal().id){
                     <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(reportSignal().id)" />
