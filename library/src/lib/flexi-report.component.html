@@ -181,7 +181,7 @@
                 @if(!isPreview() && data()){
                     <flexi-button btnColor="indigo" [title]="showDataResultText()" flexiTooltip="top" btnIcon="data_object" (click)="openDataResultPart()" />
                 }
-                @if(!isPreview() && (reportSignal().requestElements !== null && reportSignal().requestElements!.length > 0)){
+                @if(!isPreview()){
                     <flexi-button btnColor="secondary" [title]="openRequestParamsText()" flexiTooltip="top" btnIcon="search" (click)="openRequestElementPart()" />
                 }@else {
                     <flexi-button btnColor="secondary" [title]="getReportText()" flexiTooltip="top" btnIcon="search" (click)="sendRequest(form)" />

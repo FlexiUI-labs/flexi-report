@@ -47,7 +47,7 @@ export class ReportComponent {
   readonly reportResult = resource({
     request: this.id,
     loader: async () => {
-      var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/reports/${this.id()}`));
+      var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/api/reports/${this.id()}`));
       if(res.requestElements !== null && res.requestElements!.length > 0){
         const selects = res.requestElements!.filter(p => p.type === "select");
         selects.forEach(async(s) => {
