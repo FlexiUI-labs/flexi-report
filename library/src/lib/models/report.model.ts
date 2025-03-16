@@ -10,6 +10,6 @@ export class ReportModel{
     pageOrientation: "landscape" | "portrait" = "portrait";
     fontFamily: string = "Roboto";
     sqlQuery: string = "";
-    requestElements: RequestElementModel[] = [];
+    requestElements?: RequestElementModel[] | null = null;
     backgroundColor: string = "#ffffff";
 }

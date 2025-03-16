@@ -48,8 +48,8 @@ export class ReportComponent {
     request: this.id,
     loader: async () => {
       var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/reports/${this.id()}`));
-      if(res.requestElements.length > 0){
-        const selects = res.requestElements.filter(p => p.type === "select");
+      if(res.requestElements !== null && res.requestElements!.length > 0){
+        const selects = res.requestElements!.filter(p => p.type === "select");
         selects.forEach(async(s) => {
           if(s.endpoint){
             var req = await lastValueFrom(this.#http.post<any[]>(s.endpoint!, {}));
@@ -111,7 +111,7 @@ export class ReportComponent {
   }
 
   onSave(report:any){
-    this.#http.post<any>("https://localhost:7032/reports",report).subscribe((res:any) => {
+    this.#http.post<any>("https://localhost:7032/api/reports",report).subscribe((res:any) => {
       report.id = res.data;
       this.report.set(report);
       this.#report.reportResult.reload();
@@ -124,7 +124,7 @@ export class ReportComponent {
   }
 
   onDelete(id:string){
-    this.#http.delete(`https://localhost:7032/reports/${id}`).subscribe(() => {
+    this.#http.delete(`https://localhost:7032/api/reports/${id}`).subscribe(() => {
       this.#report.reportResult.reload();
       this.#router.navigateByUrl("/report/edit");
       this.#toast.showToast("Success","Rapor delete was successful","info");
@@ -136,6 +136,7 @@ export class ReportComponent {
   }
 
   onEdit(id:any){
+    console.log(id);
     this.#router.navigateByUrl(this.editPath())
   }
 }

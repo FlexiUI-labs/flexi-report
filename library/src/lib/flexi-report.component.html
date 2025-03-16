@@ -109,7 +109,7 @@
         </div>
     </div>
 
-    @if(isPreview() && reportSignal().requestElements.length > 0){
+    @if(isPreview() && (reportSignal().requestElements !== null && reportSignal().requestElements!.length > 0)){
         <div class="flex-report-request-form-part">
             <div class="flex-report-request-form-part-container">
                 <p class="flex-report-request-form-title">{{ requestFormsText() }}</p>
@@ -139,7 +139,7 @@
                             }
                         </table>
                     </div>
-                    @if(reportSignal().requestElements.length > 0){
+                    @if((reportSignal().requestElements !== null && reportSignal().requestElements!.length > 0)){
                         <div class="flexi-report-submit-container">
                             <flexi-button btnType="submit" btnColor="success" btnIcon="search" btnWidth="100%" style="width: 100%;" />
                         </div>
@@ -168,7 +168,7 @@
                     }@else {
                         <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport('save')" btnWidth="100%" />
                     }
-                    
+
                     <flexi-button btnColor="teal" [title]="downloadAsJsonText()" flexiTooltip="top" btnIcon="browser_updated" (click)="saveReport('download')" btnWidth="100%" />
                     <input type="file" accept=".json" (change)="uploadReport($event)" style="display: none;" #fileInput>
                     <flexi-button btnColor="primary" [title]="updateJsonText()" flexiTooltip="top" btnIcon="drive_folder_upload" (click)="fileInput.click()" />
@@ -181,7 +181,7 @@
                 @if(!isPreview() && data()){
                     <flexi-button btnColor="indigo" [title]="showDataResultText()" flexiTooltip="top" btnIcon="data_object" (click)="openDataResultPart()" />
                 }
-                @if(!isPreview() && reportSignal().requestElements.length > 0){
+                @if(!isPreview() && (reportSignal().requestElements !== null && reportSignal().requestElements!.length > 0)){
                     <flexi-button btnColor="secondary" [title]="openRequestParamsText()" flexiTooltip="top" btnIcon="search" (click)="openRequestElementPart()" />
                 }@else {
                     <flexi-button btnColor="secondary" [title]="getReportText()" flexiTooltip="top" btnIcon="search" (click)="sendRequest(form)" />
@@ -657,7 +657,7 @@
 
         <div class="flexi-report-request-content" (mousedown)="$event.stopPropagation()">
             <div class="flexi-report-request-list">
-                @if(reportSignal().requestElements.length === 0){
+                @if(reportSignal().requestElements === null || reportSignal().requestElements!.length === 0){
                     <p class="empty-text">{{noRequestElementsText()}}</p>
                 }
                 <form #form="ngForm" autocomplete="off" (ngSubmit)="sendRequest(form)">
@@ -690,7 +690,7 @@
                             }
                         </table>
                     </div>
-                    @if(reportSignal().requestElements.length > 0){
+                    @if(reportSignal().requestElements !== null && reportSignal().requestElements!.length > 0){
                         <div class="flexi-report-submit-container">
                             <flexi-button btnType="submit" btnColor="success" btnIcon="search" btnWidth="100%" style="width: 100%;" />
                         </div>

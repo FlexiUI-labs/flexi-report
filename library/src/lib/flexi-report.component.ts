@@ -77,7 +77,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly showProperties = signal<boolean>(false);
   readonly showPageSettings = signal<boolean>(false);
   readonly showElements = signal<boolean>(true);
-  readonly formKeys = computed(() => Object.keys(this.reportSignal().requestElements.reduce<{ [key: string]: any }>((acc, elem) => {
+  readonly formKeys = computed(() => this.reportSignal().requestElements === null ? [] :  Object.keys(this.reportSignal().requestElements!.reduce<{ [key: string]: any }>((acc, elem) => {
     acc[elem.name] = '';
     return acc;
   }, {})));
@@ -1143,7 +1143,7 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   addRequestElement() {
-    const currentElements = this.reportSignal().requestElements;
+    const currentElements = this.reportSignal().requestElements || [];
     const newIndex = currentElements.length;
 
     const newElement: RequestElementModel = {
@@ -1153,14 +1153,14 @@ export class FlexiReportComponent implements OnChanges {
 
     this.reportSignal.update(prev => ({
       ...prev,
-      requestElements: [...prev.requestElements, newElement]
+      requestElements: [...prev.requestElements || [], newElement]
     }));
 
     this.requestElement.set(initilizeRequestElementModel);
   }
 
   removeRequestElement(name: string) {
-    const elements = this.reportSignal().requestElements
+    const elements = this.reportSignal().requestElements!
       .filter(p => p.name !== name)
       .map((element, index) => ({ ...element, index }));
 
@@ -1224,7 +1224,7 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   onDropForRequestElements(event: CdkDragDrop<RequestElementModel[]>) {
-    const elements = [...this.reportSignal().requestElements];
+    const elements = [...this.reportSignal().requestElements || []];
 
     moveItemInArray(elements, event.previousIndex, event.currentIndex);
     elements.forEach((element, index) => element.index = index);
