@@ -159,11 +159,16 @@
             </div>
             <div class="flexi-report-setting-button-container">
                 @if(isPreview() && showEditButtn()){
-                    <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" [routerLink]="editPath()" />
+                    <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" (click)="onEdit.emit(reportSignal().id)" />
                 }
                 @if(!isPreview()){
                     <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
-                    <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport('save')" btnWidth="100%" />
+                    @if(reportSignal().id){
+                        <flexi-button btnColor="info" [title]="updateText()" flexiTooltip="top" btnIcon="edit" (click)="saveReport('update')" btnWidth="100%" />
+                    }@else {
+                        <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport('save')" btnWidth="100%" />
+                    }
+                    
                     <flexi-button btnColor="teal" [title]="downloadAsJsonText()" flexiTooltip="top" btnIcon="browser_updated" (click)="saveReport('download')" btnWidth="100%" />
                     <input type="file" accept=".json" (change)="uploadReport($event)" style="display: none;" #fileInput>
                     <flexi-button btnColor="primary" [title]="updateJsonText()" flexiTooltip="top" btnIcon="drive_folder_upload" (click)="fileInput.click()" />

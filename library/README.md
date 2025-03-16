@@ -50,12 +50,13 @@ Use it in your template:
       [loading]="loading()"
       [openAPIKey]="openAPIKey()"
       [isPreview]="isPreview()"
-      [editPath]="editPath()"
       [sqlQueryLoading]="sqlQueryLoadingSignal()"
       [tablesData]="tablesData()"
       (onSave)="onSave($event)"
-      (onNewReport)="onNewReport()"
+      (onEdit)="onEdit($event)"
+      (onUpdate)="onUpdate($event)"
       (onDelete)="onDelete($event)"
+      (onNewReport)="onNewReport()"
       (onSendRequest)="onSendRequest($event)"
 />
 ```
@@ -67,7 +68,6 @@ Use it in your template:
 | `data`                  | `any[]`        | Data array for binding and displaying in reports |
 | `language`              | `'en' \| 'tr'` | Language selection (English or Turkish)          |
 | `report`                | `ReportModel`  | Report configuration model                       |
-| `editPath`              | `string`       | Path for editing reports                         |
 | `isPreview`             | `boolean`      | Toggle between preview and edit modes            |
 | `loading`               | `boolean`      | Indicates loading state for general content      |
 | `sqlQueryLoadingSignal` | `boolean`      | Loading indicator for SQL query execution        |
@@ -78,9 +78,11 @@ Use it in your template:
 
 | Output        | Event Type          | Description                              |
 | ------------- | ------------------- | ---------------------------------------- |
-| `onSave`      | `EventEmitter<any>` | Emits the report content when saved      |
-| `onNewReport` | `void`              | Initiates a new report creation process  |
+| `onSave`      | `any`               | Emits the report content when saved      |
+| `onEdit`      | `any`               | Emits the report content when clicked edit button      |
+| `onUpdate`    | `any`               | Emits the report content when updated      |
 | `onDelete`    | `any`               | Emits the ID of the report to be deleted |
+| `onNewReport` | `void`              | Initiates a new report creation process  |
 | `onSendRequest` | `object`          | Emits request parameters or SQL query when executed   |
 
 ## Supported Elements

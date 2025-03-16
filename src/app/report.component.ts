@@ -18,13 +18,13 @@ import { RequestModel } from '../../library/src/lib/models/request.model';
       [loading]="loading()"
       [openAPIKey]="openAPIKey()"
       [isPreview]="isPreview()"
-      [editPath]="editPath()"
       [sqlQueryLoading]="sqlQueryLoadingSignal()"
       [tablesData]="tablesData()"
       (onSave)="onSave($event)"
       (onNewReport)="onNewReport()"
       (onDelete)="onDelete($event)"
       (onSendRequest)="onExecute($event)"
+      (onEdit)="onEdit($event)"
       />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -133,5 +133,9 @@ export class ReportComponent {
 
   onExecute(data:any){
     this.request.set(data);
+  }
+
+  onEdit(id:any){
+    this.#router.navigateByUrl(this.editPath())
   }
 }

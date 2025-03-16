@@ -1,13 +1,12 @@
 import { CdkDragDrop, DragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnChanges, output, Renderer2, signal, SimpleChanges, viewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import jsPDF from 'jspdf';
 import { StyleService } from './services/style.service';
 import { TableSettingModel } from './models/table-setting.model';
 import { FlexiButtonComponent } from 'flexi-button';
 import { ReportModel } from './models/report.model';
-import { RouterLink } from '@angular/router';
 import { FlexiTooltipDirective } from 'flexi-tooltip';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { FilterType, FlexiGridModule } from 'flexi-grid';
@@ -30,7 +29,6 @@ import { evaluate } from "mathjs";
     DragDropModule,
     FlexiButtonComponent,
     FlexiTooltipDirective,
-    RouterLink,
     NgxJsonViewerModule,
     FlexiGridModule,
     FlexiReportLoadingComponent
@@ -44,7 +42,6 @@ export class FlexiReportComponent implements OnChanges {
   readonly data = input<any>();
   readonly language = input<"en" | "tr">("en");
   readonly report = input<ReportModel>();
-  readonly editPath = input<string>();
   readonly isPreview = input<boolean>(false);
   readonly loading = input<boolean>(false);
   readonly sqlQueryLoading = input<boolean>(false);
@@ -125,6 +122,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly updateJsonText = computed(() => this.language() === "en" ? "Upload report as JSON" : "Raporu JSON olarak yükle");
   readonly reportUploadSucceedText = computed(() => this.language() === "en" ? "Report upload successful" : "Rapor başarıyla yüklendi");
   readonly reportUploadFailedText = computed(() => this.language() === "en" ? "Report upload failed" : "Raporu yükleme başarısız oldu");
+  readonly updateText = computed(() => this.language() === "en" ? "Update" : "Güncelle");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -134,8 +132,10 @@ export class FlexiReportComponent implements OnChanges {
   readonly requestElementPart = viewChild.required<ElementRef>("requestElementPart");
 
   readonly onSave = output<any>();
-  readonly onNewReport = output<void>();
+  readonly onEdit = output<any>();
+  readonly onUpdate = output<any>();
   readonly onDelete = output<any>();
+  readonly onNewReport = output<void>();
   readonly onSendRequest = output<any>();
 
   readonly #renderer = inject(Renderer2);
@@ -878,7 +878,7 @@ export class FlexiReportComponent implements OnChanges {
     }
   }
 
-  saveReport(type: "save" | "download") {
+  saveReport(type: "save" | "update" | "download") {
     if (!this.pdfArea()) return;
 
     this.clearAllSelectedClass();
@@ -894,6 +894,10 @@ export class FlexiReportComponent implements OnChanges {
 
     if (type === "save") {
       this.onSave.emit(this.reportSignal());
+    }
+
+    if (type === "update") {
+      this.onUpdate.emit(this.reportSignal());
     }
 
     if (type === "download") {
