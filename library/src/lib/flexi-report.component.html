@@ -129,7 +129,7 @@
 
                                         @if(element.type === "select"){
                                             <select class="flexi-report-input" [name]="element.name" ngModel>
-                                                <option [value]="">{{noSelectText()}}</option>
+                                                <option [value]="''">{{noSelectText()}}</option>
                                                 @for(val of element.data; track val){
                                                     <option [value]="val.id">{{val.name}}</option>
                                                 }
