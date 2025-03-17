@@ -451,7 +451,7 @@
 }
 
 .flexi-report-request-element {
-    display: block;
+    display: none;
     position: absolute;
     top: 10%;
     left: 30%;
