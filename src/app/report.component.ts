@@ -21,10 +21,11 @@ import { RequestModel } from '../../library/src/lib/models/request.model';
       [sqlQueryLoading]="sqlQueryLoadingSignal()"
       [tablesData]="tablesData()"
       (onSave)="onSave($event)"
-      (onNewReport)="onNewReport()"
-      (onDelete)="onDelete($event)"
-      (onSendRequest)="onExecute($event)"
       (onEdit)="onEdit($event)"
+      (onUpdate)="onUpdate($event)"
+      (onDelete)="onDelete($event)"
+      (onNewReport)="onNewReport()"
+      (onSendRequest)="onExecute($event)"
       />
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -116,6 +117,14 @@ export class ReportComponent {
       this.report.set(report);
       this.#report.reportResult.reload();
       this.#toast.showToast("Success","Rapor create was successful","success");
+    });
+  }
+
+  onUpdate(report:any){
+    this.#http.put<any>("https://localhost:7032/api/reports",report).subscribe((res:any) => {
+      this.report.set(report);
+      this.#report.reportResult.reload();
+      this.#toast.showToast("Success","Rapor update was successful","success");
     });
   }
 

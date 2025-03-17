@@ -5,4 +5,5 @@ export interface TableSettingModel {
   textAlign?: string;
   format?: string;
   footerValue?: string;
+  calculation?:string;
 }

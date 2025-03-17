@@ -70,6 +70,19 @@ export class FlexiReportComponent implements OnChanges {
     // { name: "icon", title: "ICON"},
     { name: "table", title: "TABLE" }
   ]);
+  readonly formats = signal<string[]>([
+    "n",
+    "c",
+    "c0",
+    "c2",
+    "c4",
+    "dd MM yyyy",
+    "dd MM yyyy HH:mm",
+    "dd MM yyyy HH:mm:ss",
+    "dd.MM.yyyy",
+    "dd.MM.yyyy HH:mm",
+    "dd.MM.yyyy HH:mm:ss"
+  ])
   readonly tableHeads = signal<TableSettingModel[]>([]);
   readonly elementBind = signal<string>("");
   readonly listProperties = computed(() => this.getListObjectProperties(this.listData() ?? []));
@@ -123,6 +136,7 @@ export class FlexiReportComponent implements OnChanges {
   readonly reportUploadSucceedText = computed(() => this.language() === "en" ? "Report upload successful" : "Rapor başarıyla yüklendi");
   readonly reportUploadFailedText = computed(() => this.language() === "en" ? "Report upload failed" : "Raporu yükleme başarısız oldu");
   readonly updateText = computed(() => this.language() === "en" ? "Update" : "Güncelle");
+  readonly sqlQueryText = computed(() => this.language() === "en" ? "Sql Query" : "Sql Query");
 
   readonly elementArea = viewChild.required<ElementRef>("elementArea");
   readonly pdfArea = viewChild.required<ElementRef>('pdfArea');
@@ -150,6 +164,14 @@ export class FlexiReportComponent implements OnChanges {
 
       if (!this.isPreview()) this.restoreDragFeature();
       else this.preview();
+    }
+
+    if(this.isPreview()){
+      const els = this.pdfArea().nativeElement.querySelectorAll(".flexi-report-cursor-move");
+      els.forEach((el:HTMLElement) => {
+        el.classList.remove("flexi-report-cursor-move");
+        el.classList.add("flexi-report-cursor-pointer");
+      })
     }
   }
 
@@ -268,7 +290,7 @@ export class FlexiReportComponent implements OnChanges {
     newElement.setAttribute('data-type', type);
     this.attachClickListener(newElement, type);
 
-    this.#renderer.setStyle(newElement, 'cursor', 'move');
+    this.#renderer.addClass(newElement, "flexi-report-cursor-move");
     this.#renderer.appendChild(this.elementArea().nativeElement, newElement);
 
     this.#dragDrop.createDrag(newElement);
@@ -515,6 +537,7 @@ export class FlexiReportComponent implements OnChanges {
         borderStyle: th.style.borderStyle,
         borderColor: th.style.borderColor,
         fontSize: th.style.fontSize,
+        calculation: th.getAttribute("data-calculation") || ""
       }));
 
       this.listData()!.forEach((res, i) => {
@@ -533,6 +556,10 @@ export class FlexiReportComponent implements OnChanges {
           if (header.format) {
             value = this.formatValue(value, header.format);
           }
+          if (header.calculation){
+            let calculationValue = this.calculateFormula(res,header.calculation);
+            value = this.formatValue(calculationValue,header.format);
+          }
           this.#renderer.appendChild(cell, this.#renderer.createText(value));
           this.#renderer.appendChild(row, cell);
         });
@@ -549,9 +576,17 @@ export class FlexiReportComponent implements OnChanges {
           let value = header.footerValue;
           if (value === "sum") {
             let total = 0;
-            this.listData()!.forEach(res => {
-              total += +res[header.property];
-            })
+            if(header.property){
+              this.listData()!.forEach(res => {
+                total += +res[header.property];
+              });
+            }
+            if(header.calculation){
+              this.listData()!.forEach(res => {
+                let calculationValue = this.calculateFormula(res,header.calculation);
+                total += +calculationValue;
+              });
+            }
             value = this.formatValue(total.toString(), header.format);
           } else if (value === "average") {
             let total = 0;
@@ -586,7 +621,12 @@ export class FlexiReportComponent implements OnChanges {
     if (format.toLowerCase().startsWith('c') || format.toLowerCase().startsWith('n')) {
       const num = typeof value === 'number' ? value : parseFloat(value);
       if (isNaN(num)) return String(value);
-      const decimals = parseInt(format.substring(1), 10) || 2;
+      let decimalPart = 2;
+      if(format.toLowerCase().startsWith('n')) decimalPart = 0;
+      if(format.toLowerCase().endsWith('0')) decimalPart = 0;
+      if(format.toLowerCase().endsWith('2')) decimalPart = 2;
+      if(format.toLowerCase().endsWith('4')) decimalPart = 4;
+      const decimals = parseInt(format.substring(1), 10) || decimalPart;
       const region = this.language() === "tr" ? "tr-TR" : "en-US";
       return num.toLocaleString(region, {
         style: 'decimal',
@@ -783,7 +823,8 @@ export class FlexiReportComponent implements OnChanges {
         property: th.getAttribute("data-bind") || "",
         textAlign: th.style.textAlign || "start",
         format: th.getAttribute("data-format") || "",
-        footerValue: th.getAttribute("data-footer") || ""
+        calculation: th.getAttribute("data-calculation") || "",
+        footerValue: th.getAttribute("data-footer") || "",
       });
     });
 
@@ -828,6 +869,9 @@ export class FlexiReportComponent implements OnChanges {
       }
       if (head.footerValue) {
         this.#renderer.setAttribute(th, "data-footer", head.footerValue);
+      }
+      if (head.calculation){
+        this.#renderer.setAttribute(th, "data-calculation", head.calculation);
       }
       this.#renderer.appendChild(headerRow, th);
     });
@@ -907,17 +951,17 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   downloadJSON(data: any, filename: string) {
-    const jsonStr = JSON.stringify(data, null, 2); // JSON formatına çevir
-    const blob = new Blob([jsonStr], { type: "application/json" }); // Blob oluştur
-    const url = URL.createObjectURL(blob); // URL oluştur
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename; // Dosya adını belirle
+    a.download = filename;
     document.body.appendChild(a);
-    a.click(); // Tıklama olayı tetikle
-    document.body.removeChild(a); // DOM'dan kaldır
-    URL.revokeObjectURL(url); // Bellek temizleme
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
 

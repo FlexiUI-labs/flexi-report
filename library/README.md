@@ -4,7 +4,7 @@ Flexi Report is a dynamic Angular standalone component designed to easily create
 
 ## Live Demo
 
-Check out a live demo on <a href="https://bolt.new/~/stackblitz-starters-1e3ed8qu">StackBlitz</a>.
+Check out a live demo on <a href="https://stackblitz.com/edit/stackblitz-starters-1e3ed8qu?file=package.json">StackBlitz</a>.
 
 ## Features
 

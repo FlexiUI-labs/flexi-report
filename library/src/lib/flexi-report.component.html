@@ -2,6 +2,28 @@
     <div class="flex-report-setting-part" [style.display]="this.isPreview() ? 'none' : 'flex'">
         <div class="flex-report-setting-part-container">
             <p class="flexi-report-setting-title">Flexi Report</p>
+            <div class="flexi-report-setting-button-container" style="flex-wrap: nowrap;">
+                @if(!isPreview()){
+                    <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
+                    @if(reportSignal().id){
+                        <flexi-button btnColor="info" [title]="updateText()" flexiTooltip="top" btnIcon="save" (click)="saveReport('update')" btnWidth="100%" />
+                    }@else {
+                        <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport('save')" btnWidth="100%" />
+                    }
+
+                    <flexi-button btnColor="teal" [title]="downloadAsJsonText()" flexiTooltip="top" btnIcon="browser_updated" (click)="saveReport('download')" btnWidth="100%" />
+                    <input type="file" accept=".json" (change)="uploadReport($event)" style="display: none;" #fileInput>
+                    <flexi-button btnColor="primary" [title]="updateJsonText()" flexiTooltip="top" btnIcon="drive_folder_upload" (click)="fileInput.click()" />
+                    <flexi-button btnColor="indigo" [title]="previewText()" flexiTooltip="top" btnIcon="visibility" (click)="preview()" />
+                    <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
+                    @if(!reportSignal().endpoint){
+                        <flexi-button btnColor="pink" [title]="openSqlQueryPartText()" flexiTooltip="top" btnIcon="query_stats" (click)="openSqlQueryPart()" />
+                    }
+                    @if(reportSignal().id){
+                        <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(reportSignal().id)" />
+                    }
+                }
+            </div>
             @if(!isPreview()){
                 <hr>
                 <div class="flexi-report-setting-subtitle" (click)="showProperties.set(!showProperties())">
@@ -155,29 +177,12 @@
             <span class="flexi-report-setting-title" style="font-size: 20px;">Report Page</span>
             <div class="flexi-report-zoom-controls">
                 <flexi-button btnColor="light" btnSize="small" btnIcon="remove" (click)="zoomOut()" />
-                <input [value]="'%' + (zoomValue() * 100).toFixed(0)" style="width: 70px; text-align: center;"/>
+                <input class="flexi-report-input" [value]="'%' + (zoomValue() * 100).toFixed(0)" style="width: 70px; text-align: center; padding: 5px;"/>
                 <flexi-button btnColor="light" btnSize="small" btnIcon="add" (click)="zoomIn()" />
             </div>
             <div class="flexi-report-setting-button-container">
                 @if(isPreview() && showEditButtn()){
                     <flexi-button btnColor="warning" [title]="editText()" flexiTooltip="top" btnIcon="edit" (click)="onEdit.emit(reportSignal().id)" />
-                }
-                @if(!isPreview()){
-                    <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
-                    @if(reportSignal().id){
-                        <flexi-button btnColor="info" [title]="updateText()" flexiTooltip="top" btnIcon="edit" (click)="saveReport('update')" btnWidth="100%" />
-                    }@else {
-                        <flexi-button btnColor="info" [title]="saveText()" flexiTooltip="top" btnIcon="save" (click)="saveReport('save')" btnWidth="100%" />
-                    }
-
-                    <flexi-button btnColor="teal" [title]="downloadAsJsonText()" flexiTooltip="top" btnIcon="browser_updated" (click)="saveReport('download')" btnWidth="100%" />
-                    <input type="file" accept=".json" (change)="uploadReport($event)" style="display: none;" #fileInput>
-                    <flexi-button btnColor="primary" [title]="updateJsonText()" flexiTooltip="top" btnIcon="drive_folder_upload" (click)="fileInput.click()" />
-                    <flexi-button btnColor="primary" [title]="previewText()" flexiTooltip="top" btnIcon="gallery_thumbnail" (click)="preview()" />
-                    <flexi-button btnColor="danger" [title]="clearText()" flexiTooltip="top" btnIcon="ink_eraser" (click)="clear()" />
-                    @if(!reportSignal().endpoint){
-                        <flexi-button btnColor="pink" [title]="openSqlQueryPartText()" flexiTooltip="top" btnIcon="query_stats" (click)="openSqlQueryPart()" />
-                    }
                 }
                 @if(!isPreview() && data()){
                     <flexi-button btnColor="indigo" [title]="showDataResultText()" flexiTooltip="top" btnIcon="data_object" (click)="openDataResultPart()" />
@@ -187,12 +192,9 @@
                 }@else {
                     <flexi-button btnColor="secondary" [title]="getReportText()" flexiTooltip="top" btnIcon="search" (click)="sendRequest(form)" />
                 }
-                <flexi-button btnColor="success" [title]="donwloadAsPDFText()" flexiTooltip="top" btnIcon="picture_as_pdf" (click)="downloadAsPDF()" />
-                <flexi-button btnColor="dark" [title]="printText()" flexiTooltip="top" btnIcon="print" (click)="print()" />
+                <flexi-button btnColor="primary" [title]="donwloadAsPDFText()" flexiTooltip="top" btnIcon="download" (click)="downloadAsPDF()" />
                 <flexi-button btnColor="success" [title]="exportToExcelText()" flexiTooltip="top" btnIcon="file_export" (click)="exportToExcel()" />
-                @if(!isPreview() && reportSignal().id){
-                    <flexi-button btnColor="danger" [title]="deleteText()" flexiTooltip="top" btnIcon="delete" (click)="onDelete.emit(reportSignal().id)" />
-                }
+                <flexi-button btnColor="dark" [title]="printText()" flexiTooltip="top" btnIcon="print" (click)="print()" />
             </div>
         </div>
         <div class="flexi-report-pdf-container" [style.transform]="'scale(' + zoomValue() + ')'" [style.transformOrigin]="'top left'">
@@ -228,7 +230,7 @@
             <flexi-button btnSize="x-small" btnColor="dark" btnIcon="close" title="Close" (click)="closeStylePart()" />
         </div>
         <div style="position: relative;">
-            <div class="flexi-report-setting-subtitle">
+            <div class="flexi-report-setting-subtitle" style="margin-left: 25px;">
                 {{ style.elementType() }} {{ styleSettingsText() }}
             </div>
             <div style="max-height: 500px; overflow: auto; padding-right: 25px;">
@@ -486,7 +488,7 @@
                 </table>
             </div>
 
-            <div style="position: absolute; top: 10px; left: 150px;">
+            <div style="position: absolute; top: 10px; left: 0px;">
                 <flexi-button btnColor="pink" btnSize="x-small" btnIcon="delete" [title]="deleteElementText()" (click)="deleteElement()" />
             </div>
         </div>
@@ -503,6 +505,7 @@
                                 <th>Text Align</th>
                                 <th>Property</th>
                                 <th>Format</th>
+                                <th>Calculation</th>
                                 @if(style.showFooter()){
                                     <th>Footer</th>
                                 }
@@ -537,7 +540,15 @@
                                         </select>
                                     </td>
                                     <td>
-                                        <input class="flexi-report-input" [(ngModel)]="head.format" (input)="updateTableHeads()" />
+                                        <select class="flexi-report-input" [(ngModel)]="head.format" (change)="updateTableHeads()">
+                                            <option value="">{{ noSelectText() }}</option>
+                                            @for(val of formats(); track val){
+                                                <option>{{val}}</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input class="flexi-report-input" [(ngModel)]="head.calculation" (input)="updateTableHeads()" />
                                     </td>
                                     @if(style.showFooter()){
                                         <td>
@@ -575,7 +586,8 @@
 
     <div class="flexi-report-sql-query" #sqlQueryPart cdkDrag>
         <div style="position: relative;">
-            <div>
+            <div class="flexi-report-request-header">
+                <span>{{sqlQueryText()}}</span>
                 <div class="flexi-report-setting-close-btn">
                     <flexi-button btnSize="x-small" btnColor="danger" btnIcon="close" title="Close" (click)="closeSqlQueryPart()" />
                 </div>
@@ -664,15 +676,21 @@
                 <form #form="ngForm" autocomplete="off" (ngSubmit)="sendRequest(form)">
                     <div cdkDropList (cdkDropListDropped)="onDropForRequestElements($event)">
                         <table class="flexi-report-table">
-                            @for(element of reportSignal().requestElements; track element){
-                                <tbody cdkDrag style="position: relative;">
-                                    <tr>
-                                        <th>{{ element.label }}</th>
-                                        @if(!isPreview()){
-                                            <flexi-button btnSize="x-small" btnColor="danger" btnIcon="delete" (click)="removeRequestElement(element.name)" class="flexi-report-delete-btn"/>
-                                        }
-                                    </tr>
-                                    <tr>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Label</th>
+                                    <th>Type</th>
+                                    <th>#</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for(element of reportSignal().requestElements; track element){
+                                    <tr cdkDrag style="position: relative;">
+                                        <td cdkDragHandle class="drag-handle">
+                                            <span class="material-symbols-outlined">reorder</span>
+                                        </td>
+                                        <td>{{ element.label }}</td>
                                         <td>
                                             @if(element.type === "text" || element.type === "date"){
                                                 <input class="flexi-report-input" [type]="element.type" [name]="element.name" [ngModel]="element.type === 'date' ? date() : ''">
@@ -686,9 +704,12 @@
                                                 </select>
                                             }
                                         </td>
+                                        <td>
+                                            <flexi-button btnSize="x-small" btnColor="danger" btnIcon="delete" (click)="removeRequestElement(element.name)" />
+                                        </td>
                                     </tr>
-                                </tbody>
-                            }
+                                }
+                            </tbody>
                         </table>
                     </div>
                     @if(reportSignal().requestElements !== null && reportSignal().requestElements!.length > 0){
@@ -699,59 +720,57 @@
                 </form>
             </div>
 
-            @if(!isPreview()){
-                <div class="flexi-report-request-form">
-                    <table class="flexi-report-table">
+            <div class="flexi-report-request-form">
+                <table class="flexi-report-table">
+                    <tbody>
+                        <tr>
+                            <th>Label</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().label">
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <th>Type</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="requestElement().type">
+                                    <option value="text">Text</option>
+                                    <option value="date">Date</option>
+                                    <option value="select">Select</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <th>Name</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().name">
+                            </td>
+                        </tr>
+                    </tbody>
+                    @if(requestElement().type === "select"){
                         <tbody>
                             <tr>
-                                <th>Label</th>
+                                <th>Endpoint</th>
                             </tr>
                             <tr>
                                 <td>
-                                    <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().label">
+                                    <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().endpoint">
                                 </td>
                             </tr>
                         </tbody>
-                        <tbody>
-                            <tr>
-                                <th>Type</th>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <select class="flexi-report-input" [(ngModel)]="requestElement().type">
-                                        <option value="text">Text</option>
-                                        <option value="date">Date</option>
-                                        <option value="select">Select</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tbody>
-                            <tr>
-                                <th>Name</th>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().name">
-                                </td>
-                            </tr>
-                        </tbody>
-                        @if(requestElement().type === "select"){
-                            <tbody>
-                                <tr>
-                                    <th>Endpoint</th>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <input class="flexi-report-input" type="text" [(ngModel)]="requestElement().endpoint">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        }
-                    </table>
-                    <flexi-button btnColor="primary" btnSize="medium" btnIcon="add" btnWidth="100%" btnText="Add Request Element" (click)="addRequestElement()" />
-                </div>
-            }
+                    }
+                </table>
+                <flexi-button btnColor="primary" btnSize="medium" btnIcon="add" btnWidth="100%" title="Add Request Element" (click)="addRequestElement()" />
+            </div>
         </div>
     </div>
 </div>

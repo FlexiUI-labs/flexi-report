@@ -216,7 +216,7 @@
 
 .flexi-report-setting-close-btn {
     position: absolute;
-    top: 5px;
+    top: 10px;
     right: 15px;
 }
 
@@ -451,7 +451,7 @@
 }
 
 .flexi-report-request-element {
-    display: none;
+    display: block;
     position: absolute;
     top: 10%;
     left: 30%;
@@ -625,4 +625,12 @@
 
 .flex-report-request-form-title {
     font-size: 20px;
+}
+
+.flexi-report-cursor-move{
+    cursor: move;
+}
+
+.flexi-report-cursor-pointer{
+    cursor: auto;
 }
