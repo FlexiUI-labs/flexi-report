@@ -2,7 +2,7 @@
     <div class="flex-report-setting-part" [style.display]="this.isPreview() ? 'none' : 'flex'">
         <div class="flex-report-setting-part-container">
             <p class="flexi-report-setting-title">Flexi Report</p>
-            <div class="flexi-report-setting-button-container" style="flex-wrap: nowrap;">
+            <div class="flexi-report-setting-button-container">
                 @if(!isPreview()){
                     <flexi-button btnColor="light" [title]="newReportText()" flexiTooltip="top" btnIcon="new_window" (click)="onNewReport.emit()" />
                     @if(reportSignal().id){
