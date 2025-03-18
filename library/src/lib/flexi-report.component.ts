@@ -12,7 +12,6 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { FilterType, FlexiGridModule } from 'flexi-grid';
 import { FlexiReportLoadingComponent } from './flexi-report-loading/flexi-report-loading.component';
 import { AISqlQueryRequestModel } from './models/ai-sql-query-request.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { initilizeRequestElementModel, RequestElementModel } from './models/request-element.model';
 import { RequestModel } from './models/request.model';
@@ -20,6 +19,7 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ElementModel } from '../public-api';
 import { evaluate } from "mathjs";
+import { HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'flexi-report',
@@ -155,7 +155,6 @@ export class FlexiReportComponent implements OnChanges {
   readonly #renderer = inject(Renderer2);
   readonly #dragDrop = inject(DragDrop);
   readonly style = inject(StyleService);
-  readonly #http = inject(HttpClient);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.reportSignal()) {
@@ -1123,10 +1122,10 @@ export class FlexiReportComponent implements OnChanges {
       schema: JSON.stringify(this.tablesData())
     }));
 
-    const headers = new HttpHeaders({
+    const headers = {
       'Authorization': `Bearer ${this.openAPIKey()}`,
       'Content-Type': 'application/json'
-    });
+    };
     this.sqlQueryLoadingSignal.set(true);
 
     const requestBody = {
@@ -1150,14 +1149,21 @@ export class FlexiReportComponent implements OnChanges {
       ]
     };
 
-    const res = await lastValueFrom(this.#http.post<any>(
-      "https://api.openai.com/v1/chat/completions",
-      requestBody,
-      { headers }
-    ));
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      body: JSON.stringify(requestBody),
+      method: "POST",
+      headers: headers
+    })
+    .then(res => res.json())
+    .catch(() => {
+      this.sqlQueryLoadingSignal.set(false);
+      return null;
+    });
 
-    this.sqlQueryLoadingSignal.set(false);
-    this.reportSignal().sqlQuery = res.choices[0].message.content;
+    if (res) {
+      this.sqlQueryLoadingSignal.set(false);
+      this.reportSignal().sqlQuery = res.choices?.[0]?.message?.content || "";
+    }
   }
 
   setProperty(event: any) {

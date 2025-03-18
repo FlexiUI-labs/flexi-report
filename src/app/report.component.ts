@@ -20,6 +20,7 @@ import { RequestModel } from '../../library/src/lib/models/request.model';
       [isPreview]="isPreview()"
       [sqlQueryLoading]="sqlQueryLoadingSignal()"
       [tablesData]="tablesData()"
+      [tablesData]="databaseSchema()"
       (onSave)="onSave($event)"
       (onEdit)="onEdit($event)"
       (onUpdate)="onUpdate($event)"
@@ -37,11 +38,12 @@ export class ReportComponent {
   readonly type = signal<string>("");
   readonly openAPIKey = signal<string>("");
   readonly request = signal<RequestModel>(new RequestModel());
+  readonly databaseSchema = signal<any[]>([]);
 
   readonly isPreview = computed(() => {
-    if(!this.id()) return false;
+    if (!this.id()) return false;
 
-    if(this.type() === "preview") return true;
+    if (this.type() === "preview") return true;
     return false;
   });
 
@@ -49,10 +51,10 @@ export class ReportComponent {
     request: this.id,
     loader: async () => {
       var res = await lastValueFrom(this.#http.get<ReportModel>(`https://localhost:7032/api/reports/${this.id()}`));
-      if(res.requestElements !== null && res.requestElements!.length > 0){
+      if (res.requestElements !== null && res.requestElements!.length > 0) {
         const selects = res.requestElements!.filter(p => p.type === "select");
-        selects.forEach(async(s) => {
-          if(s.endpoint){
+        selects.forEach(async (s) => {
+          if (s.endpoint) {
             var req = await lastValueFrom(this.#http.post<any[]>(s.endpoint!, {}));
             s.data = req;
           }
@@ -67,11 +69,11 @@ export class ReportComponent {
 
   readonly dataResult = resource({
     request: this.request,
-    loader: async({request}) => {
-      let res:any;
-      if(request.sqlQuery){
+    loader: async ({ request }) => {
+      let res: any;
+      if (request.sqlQuery) {
         res = await lastValueFrom(this.#http.post<any[]>("https://localhost:7032/execute-query", request));
-      }else if(request.endpoint){
+      } else if (request.endpoint) {
         const endpoint = request.endpoint;
         res = await lastValueFrom(this.#http.post<any>(endpoint, request.params, {
           headers: {
@@ -90,8 +92,8 @@ export class ReportComponent {
 
   readonly tablesResult = resource({
     request: this.type,
-    loader: async ({request})=> {
-      if(request === "preview") return;
+    loader: async ({ request }) => {
+      if (request === "preview") return;
       var res = await lastValueFrom(this.#http.get<any[]>("https://localhost:7032/database-schema"));
       return res;
     }
@@ -104,47 +106,47 @@ export class ReportComponent {
   readonly #router = inject(Router);
   readonly #toast = inject(FlexiToastService);
 
-  constructor(){
+  constructor() {
     this.#activated.params.subscribe(res => {
       this.id.set(res["id"]);
       this.type.set(res["type"]);
     });
   }
 
-  onSave(report:any){
-    this.#http.post<any>("https://localhost:7032/api/reports",report).subscribe((res:any) => {
+  onSave(report: any) {
+    this.#http.post<any>("https://localhost:7032/api/reports", report).subscribe((res: any) => {
       report.id = res.data;
       this.report.set(report);
       this.#report.reportResult.reload();
-      this.#toast.showToast("Success","Rapor create was successful","success");
+      this.#toast.showToast("Success", "Rapor create was successful", "success");
     });
   }
 
-  onUpdate(report:any){
-    this.#http.put<any>("https://localhost:7032/api/reports",report).subscribe((res:any) => {
+  onUpdate(report: any) {
+    this.#http.put<any>("https://localhost:7032/api/reports", report).subscribe((res: any) => {
       this.report.set(report);
       this.#report.reportResult.reload();
-      this.#toast.showToast("Success","Rapor update was successful","success");
+      this.#toast.showToast("Success", "Rapor update was successful", "success");
     });
   }
 
-  onNewReport(){
+  onNewReport() {
     this.#router.navigateByUrl("/report/edit");
   }
 
-  onDelete(id:string){
+  onDelete(id: string) {
     this.#http.delete(`https://localhost:7032/api/reports/${id}`).subscribe(() => {
       this.#report.reportResult.reload();
       this.#router.navigateByUrl("/report/edit");
-      this.#toast.showToast("Success","Rapor delete was successful","info");
+      this.#toast.showToast("Success", "Rapor delete was successful", "info");
     });
   }
 
-  onExecute(data:any){
+  onExecute(data: any) {
     this.request.set(data);
   }
 
-  onEdit(id:any){
+  onEdit(id: any) {
     console.log(id);
     this.#router.navigateByUrl(this.editPath())
   }
