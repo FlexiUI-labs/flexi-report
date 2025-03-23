@@ -218,6 +218,7 @@
     position: absolute;
     top: 10px;
     right: 15px;
+    z-index: 2;
 }
 
 .flexi-report-input {
@@ -627,10 +628,26 @@
     font-size: 20px;
 }
 
-.flexi-report-cursor-move{
+.flexi-report-cursor-move {
     cursor: move;
 }
 
-.flexi-report-cursor-pointer{
+.flexi-report-cursor-pointer {
     cursor: auto;
+}
+
+.flexi-report-page-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.flexi-report-page-table th,
+.flexi-report-page-table td {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: left;
+}
+
+.flexi-report-page-table th {
+    background-color: #f2f2f2;
 }

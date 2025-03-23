@@ -7,12 +7,17 @@ export interface ElementStyleModel {
     borderWidth?: string;
     borderColor?: string;
     borderStyle?: string;
+    trBorderWidth?: string;
+    trBorderColor?: string;
+    trBorderStyle?: string;
     thBorderWidth?: string;
     thBorderColor?: string;
     thBorderStyle?: string;
+    thWidth?:string;
     tdBorderWidth?: string;
     tdBorderColor?: string;
     tdBorderStyle?: string;
+    tdWidth?:string;
     fontSize?: string;
     thFontSize?:string;
     tdFontSize?:string;

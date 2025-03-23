@@ -55,6 +55,7 @@ export class StyleService {
 
   changeElementText() {
     this.selectedElement()!.innerText = this.elementStyle().text;
+    this.selectedElement()!.setAttribute("data-value", this.elementStyle().text);
   }
 
   changeElementWith() {
@@ -161,7 +162,7 @@ export class StyleService {
     const tds = this.selectedElement()?.querySelectorAll("td");
 
     ths?.forEach(el => {
-      el.style.fontSize = this.elementStyle().thFontSize || el.style.fontSize || "12px";
+      el.style.fontSize = this.elementStyle().thFontSize || el.style.fontSize || "11px";
     });
 
     tds?.forEach(el => {
@@ -186,5 +187,28 @@ export class StyleService {
       reader.onload = () => el.src = reader.result as string;
       reader.readAsDataURL(file);
     }
+  }
+
+  changeElementTHWith(){
+    const ths = this.selectedElement()?.querySelectorAll("th");
+    ths?.forEach(el => {
+      el.style.width = this.elementStyle().thWidth || "auto";
+    });
+  }
+
+  changeElementTDWith(){
+    const tds = this.selectedElement()?.querySelectorAll("td");
+    tds?.forEach(el => {
+      el.style.width = this.elementStyle().tdWidth || "auto";
+    });
+  }
+
+  changeElTRBorder(){
+    const trs = this.selectedElement()?.querySelectorAll("th,td") as NodeListOf<HTMLElement>;
+    trs?.forEach(el => {
+      el.style.borderWidth = this.elementStyle().trBorderWidth || "1px";
+      el.style.borderStyle = this.elementStyle().trBorderStyle || "solid";
+      el.style.borderColor = this.elementStyle().trBorderColor || "black";
+    });
   }
 }

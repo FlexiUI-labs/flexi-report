@@ -12,14 +12,12 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { FilterType, FlexiGridModule } from 'flexi-grid';
 import { FlexiReportLoadingComponent } from './flexi-report-loading/flexi-report-loading.component';
 import { AISqlQueryRequestModel } from './models/ai-sql-query-request.model';
-import { lastValueFrom } from 'rxjs';
 import { initilizeRequestElementModel, RequestElementModel } from './models/request-element.model';
 import { RequestModel } from './models/request.model';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ElementModel } from '../public-api';
 import { evaluate } from "mathjs";
-import { HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'flexi-report',
@@ -68,7 +66,8 @@ export class FlexiReportComponent implements OnChanges {
     { name: "hr", title: "HR" },
     { name: "img", title: "IMG" },
     // { name: "icon", title: "ICON"},
-    { name: "table", title: "TABLE" }
+    { name: "table", title: "TABLE" },
+    { name: "single_table", title: "SINGLE TABLE" },
   ]);
   readonly formats = signal<string[]>([
     "n",
@@ -233,8 +232,9 @@ export class FlexiReportComponent implements OnChanges {
         fontWeight: newElement.style.fontWeight || "normal",
         textDecoration: newElement.style.textDecoration || "none",
         property: newElement.getAttribute("data-property") || "",
-        calculation: newElement.getAttribute("data-calculation") || ""
+        calculation: newElement.getAttribute("data-calculation") || "",
       });
+
       if (type === "table") {
         const th = newElement.querySelector("th");
         this.style.elementStyle.update(prev => ({
@@ -255,6 +255,31 @@ export class FlexiReportComponent implements OnChanges {
         }));
 
         this.getTableHeads(newElement);
+      }
+
+      if(type === "single_table"){
+        const th = newElement.querySelector("th") as HTMLElement;
+        this.style.elementStyle.update(prev => ({
+          ...prev,
+          thWidth: th?.style.width || "auto",
+          thFontSize: th?.style.fontSize || "11px",
+        }));
+
+        const td = newElement.querySelector("td");
+        this.style.elementStyle.update(prev => ({
+          ...prev,
+          tdWidth: td?.style.width || "auto",
+          tdFontSize: td?.style.fontSize || "10px",
+        }));
+
+        this.style.elementStyle.update(prev => ({
+          ...prev,
+          trBorderWidth: th?.style.borderWidth,
+          trBorderStyle: th?.style.borderStyle,
+          trBorderColor: this.style.elementStyle().trBorderColor || this.rgbStringToHex(th.style.borderColor)
+        }));
+
+        this.getTableForSingleTable(newElement);
       }
     });
   }
@@ -281,6 +306,8 @@ export class FlexiReportComponent implements OnChanges {
       newElement = this.createIcon();
     } else if (type === "table") {
       newElement = this.createTable();
+    } else if (type === "single_table") {
+      newElement = this.createSingleTable();
     }
 
     if (!newElement) return;
@@ -336,15 +363,15 @@ export class FlexiReportComponent implements OnChanges {
   createLine(orientation: 'horizontal' | 'vertical'): HTMLElement {
     const line = this.#renderer.createElement("div");
     this.#renderer.setStyle(line, 'position', 'absolute');
-    this.#renderer.setStyle(line, 'backgroundColor', '#000'); // Siyah çizgi
-    this.#renderer.setStyle(line, 'cursor', 'move'); // Taşınabilir
-    this.#renderer.addClass(line, 'draggable'); // Sürükleme için
+    this.#renderer.setStyle(line, 'backgroundColor', '#000');
+    this.#renderer.setStyle(line, 'cursor', 'move');
+    this.#renderer.addClass(line, 'draggable');
 
     if (orientation === 'horizontal') {
       this.#renderer.setStyle(line, 'width', '100px');
-      this.#renderer.setStyle(line, 'height', '2px'); // İnce çizgi
+      this.#renderer.setStyle(line, 'height', '2px');
     } else {
-      this.#renderer.setStyle(line, 'width', '2px'); // İnce çizgi
+      this.#renderer.setStyle(line, 'width', '2px');
       this.#renderer.setStyle(line, 'height', '100px');
     }
 
@@ -368,7 +395,9 @@ export class FlexiReportComponent implements OnChanges {
   createTable(): HTMLElement {
     const table = this.#renderer.createElement("table");
     this.#renderer.setStyle(table, 'border-collapse', 'collapse');
-    this.#renderer.setStyle(table, 'width', '97%');
+    this.#renderer.setStyle(table, 'width', '98%');
+    this.#renderer.addClass(table, "flexi-report-page-table");
+    this.#renderer.setAttribute(table, "data-name", "table");
 
     const thead = this.#renderer.createElement("thead");
     this.#renderer.appendChild(table, thead);
@@ -394,16 +423,48 @@ export class FlexiReportComponent implements OnChanges {
       for (let i = 0; i < 3; i++) {
         const td = this.#renderer.createElement("td");
         this.#renderer.appendChild(td, this.#renderer.createText(`Example ${i + 1}`));
-        this.#renderer.setStyle(td, 'border-width', '1px');
-        this.#renderer.setStyle(td, 'border-style', 'solid');
-        this.#renderer.setStyle(td, 'border-color', 'black');
-        this.#renderer.setStyle(td, 'font-size', '10px');
+        this.#renderer.setStyle(td, 'border-width', this.style.elementStyle().tdBorderWidth || '1px');
+        this.#renderer.setStyle(td, 'border-style', this.style.elementStyle().tdBorderStyle || 'solid');
+        this.#renderer.setStyle(td, 'border-color', this.style.elementStyle().tdBorderColor || 'black');
+        this.#renderer.setStyle(td, 'font-size', this.style.elementStyle().tdFontSize || '10px');
         this.#renderer.setStyle(td, 'padding', '5px');
         this.#renderer.addClass(td, "remove-after");
         this.#renderer.appendChild(bodyRow, td);
       }
       this.#renderer.appendChild(tbody, bodyRow);
     }
+
+    return table;
+  }
+
+  createSingleTable(): HTMLElement{
+    const table = this.#renderer.createElement("table");
+    this.#renderer.setStyle(table, 'border-collapse', 'collapse');
+    this.#renderer.setStyle(table, 'width', '40%');
+    this.#renderer.setAttribute(table, "data-name", "single_table");
+
+    const tr = this.#renderer.createElement("tr");
+    this.#renderer.appendChild(table, tr);
+
+    const th:HTMLElement = this.#renderer.createElement("th");
+    th.innerText = "Header";
+    this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().trBorderWidth || '1px');
+    this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().trBorderStyle || 'solid');
+    this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().trBorderColor || 'black');
+    this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
+    this.#renderer.setStyle(th, "vertical-align", "top");
+    this.#renderer.setStyle(th, 'padding', '5px');
+    this.#renderer.appendChild(tr, th);
+
+    const td:HTMLElement = this.#renderer.createElement("td");
+    td.innerText = "Header";
+    this.#renderer.setStyle(td, 'border-width', this.style.elementStyle().trBorderWidth || '1px');
+    this.#renderer.setStyle(td, 'border-style', this.style.elementStyle().trBorderStyle || 'solid');
+    this.#renderer.setStyle(td, 'border-color', this.style.elementStyle().trBorderColor || 'black');
+    this.#renderer.setStyle(td, 'font-size', this.style.elementStyle().tdFontSize || '10px');
+    this.#renderer.setStyle(td, "vertical-align", "top");
+    this.#renderer.setStyle(td, 'padding', '5px');
+    this.#renderer.appendChild(tr, td);
 
     return table;
   }
@@ -475,11 +536,10 @@ export class FlexiReportComponent implements OnChanges {
           value = this.formatValue(value, "n");
         } else if (property) {
           value = this.getNestedValue(this.singleData(), property, "");
-          if (!isNaN(value)) value = Number(value).toLocaleString();
+          //if (!isNaN(value)) value = Number(value).toLocaleString();
         }
 
         el.innerText = value !== undefined ? value : "";
-        el.setAttribute("data-value", el.innerText);
       });
     }
 
@@ -656,7 +716,7 @@ export class FlexiReportComponent implements OnChanges {
       el.innerText = value
     });
 
-    const tables = this.pdfArea().nativeElement.querySelectorAll("table");
+    let tables = this.pdfArea().nativeElement.querySelectorAll('table[data-name="table"]');
     tables.forEach((table: HTMLElement) => {
       const theads = table.querySelectorAll("thead th") as NodeListOf<HTMLElement>;
       let tbody = table.querySelector("tbody");
@@ -830,9 +890,59 @@ export class FlexiReportComponent implements OnChanges {
     this.tableHeads.set(headers);
   }
 
+  getTableForSingleTable(element:HTMLElement){
+    const headers: TableSettingModel[] = [];
+    const els = element.querySelectorAll("th, td") as NodeListOf<HTMLElement>;
+
+    els.forEach((el) => {
+      headers.push({
+        value: el.innerText.trim(),
+        width: el.style.width || "auto",
+        property: el.getAttribute("data-property") || "",
+        textAlign: el.style.textAlign || "start",
+        format: el.getAttribute("data-format") || "",
+        calculation: el.getAttribute("data-calculation") || "",
+        footerValue: el.getAttribute("data-footer") || "",
+        el: el
+      });
+    });
+
+    this.tableHeads.set(headers);
+  }
+
   deleteTableHead(index: number) {
-    this.tableHeads().splice(index, 1);
-    this.updateTableHeads();
+    if(this.style.elementName() === "table"){
+      this.tableHeads().splice(index, 1);
+      const tbodyTrs = this.pdfArea().nativeElement.querySelectorAll("tbody tr");
+      tbodyTrs.forEach((tr:HTMLElement) => {
+        const tds = tr.querySelectorAll("td");
+        tds[index].remove();
+      });
+
+      const tfootTr = this.pdfArea().nativeElement.querySelector("tfoot tr");
+      if(tfootTr){
+        const ths = tfootTr.querySelectorAll("th");
+        ths[index].remove();
+      }
+      this.updateTableHeads();
+    }else{
+      const head = {...this.tableHeads()[index]};
+      if(head.el!.tagName === "TH"){
+        this.tableHeads().splice(index, 2);
+      }else{
+        this.tableHeads().splice(index - 1, 2);
+      }
+      const tr = head.el!.parentElement as HTMLTableRowElement;
+      tr.remove();
+    }
+  }
+
+  updateTableHead(value:any){
+    if(this.style.elementName() === "table"){
+      this.updateTableHeads();
+    }else{
+      this.updateTableForSingleTable(value);
+    }
   }
 
   updateTableHeads() {
@@ -878,6 +988,14 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setAttribute(table, "data-bind", "true");
   }
 
+  updateTableForSingleTable(data:TableSettingModel){
+    data.el!.innerText = data.value;
+    data.el!.setAttribute("data-value",data.value!);
+    if(data.property){
+      data.el!.setAttribute("data-property",data.property!);
+    }
+  }
+
   addNewTableHead() {
     this.tableHeads.update(prev => [...prev, { value: "New Header", width: "auto", property: "" }]);
     this.updateTableHeads();
@@ -912,6 +1030,37 @@ export class FlexiReportComponent implements OnChanges {
       this.#renderer.addClass(th, "remove-after");
       this.#renderer.appendChild(tr, th);
     }
+  }
+
+  addNewTableHeadForSingleTable(){
+    const table = this.style.selectedElement() as HTMLTableElement;
+
+    const tr = this.#renderer.createElement("tr");
+    this.#renderer.appendChild(table, tr);
+
+    const th:HTMLElement = this.#renderer.createElement("th");
+    th.innerText = "New Header";
+    this.#renderer.setStyle(th, "width", this.style.elementStyle().thWidth || "auto");
+    this.#renderer.setStyle(th, 'border-width', this.style.elementStyle().trBorderWidth || '1px');
+    this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().trBorderStyle || 'solid');
+    this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().trBorderColor || 'black');
+    this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
+    this.#renderer.setStyle(th, "vertical-align", "top");
+    this.#renderer.setStyle(th, 'padding', '5px');
+    this.#renderer.appendChild(tr, th);
+    this.tableHeads.update(prev => [...prev, { value: "New Header", width: "auto", property: "", el: th }]);
+
+    const td:HTMLElement = this.#renderer.createElement("td");
+    td.innerText = "New Header";
+    this.#renderer.setStyle(td, "width", this.style.elementStyle().tdWidth || "auto");
+    this.#renderer.setStyle(td, 'border-width', this.style.elementStyle().trBorderWidth || '1px');
+    this.#renderer.setStyle(td, 'border-style', this.style.elementStyle().trBorderStyle || 'solid');
+    this.#renderer.setStyle(td, 'border-color', this.style.elementStyle().trBorderColor || 'black');
+    this.#renderer.setStyle(td, 'font-size', this.style.elementStyle().tdFontSize || '10px');
+    this.#renderer.setStyle(td, "vertical-align", "top");
+    this.#renderer.setStyle(td, 'padding', '5px');
+    this.#renderer.appendChild(tr, td);
+    this.tableHeads.update(prev => [...prev, { value: "New Header", width: "auto", property: "", el: td }]);
   }
 
   deleteElement() {
