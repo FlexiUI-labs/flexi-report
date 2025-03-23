@@ -552,13 +552,19 @@
                             <th>Value</th>
                             @if(style.elementName() === "table"){
                                 <th>Width</th>
-                                <th>Text Align</th>
+                            }
+                            <th>Text Align</th>
+                            @if(style.elementName() === "single_table"){
+                                <th>Text Weight</th>
                             }
                             <th>Property</th>
                             <th>Format</th>
-                            <th>Calculation</th>
                             @if(style.showFooter() && style.elementName() === "table"){
+                                <th>Calculation</th>
                                 <th>Footer</th>
+                            }
+                            @if(style.elementName() === "single_table"){
+                                <th>Condition</th>
                             }
                             <th>Action</th>
                         </tr>
@@ -576,12 +582,17 @@
                                 <td>
                                     <input class="flexi-report-input" [(ngModel)]="head.width" (input)="updateTableHead(head)" />
                                 </td>
+                            }
+                            <td>
+                                <select class="flexi-report-input" [(ngModel)]="head.textAlign" (change)="updateTableHead(head)">
+                                    <option value="start">Start</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">End</option>
+                                </select>
+                            </td>
+                            @if(style.elementName() === "single_table"){
                                 <td>
-                                    <select class="flexi-report-input" [(ngModel)]="head.textAlign" (change)="updateTableHead(head)">
-                                        <option value="start">Start</option>
-                                        <option value="center">Center</option>
-                                        <option value="right">End</option>
-                                    </select>
+                                    <input class="flexi-report-input" type="text" [(ngModel)]="head.fontWeight" (input)="updateTableHead(head)" />
                                 </td>
                             }
                             <td>
@@ -606,12 +617,20 @@
                                     }
                                 </select>
                             </td>
-                            <td>
-                                <input class="flexi-report-input" [(ngModel)]="head.calculation" (input)="updateTableHead(head)" />
-                            </td>
                             @if(style.showFooter() && style.elementName() === "table"){
                                 <td>
+                                    <input class="flexi-report-input" [(ngModel)]="head.calculation" (input)="updateTableHead(head)" />
+                                </td>
+                                <td>
                                     <input class="flexi-report-input" [(ngModel)]="head.footerValue" (input)="updateTableHead(head)" />
+                                </td>
+                            }
+                            @if(style.elementName() === "single_table"){
+                                <td>
+                                    <select class="flexi-report-input" [(ngModel)]="head.condition" (change)="updateTableHead(head)">
+                                        <option value="">Seçim Yapınız...</option>
+                                        <option>Sıfırdan Büyük</option>
+                                    </select>
                                 </td>
                             }
                             <td>

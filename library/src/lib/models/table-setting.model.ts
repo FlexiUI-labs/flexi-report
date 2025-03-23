@@ -7,4 +7,6 @@ export interface TableSettingModel {
   footerValue?: string;
   calculation?:string;
   el?: HTMLElement;
+  fontWeight?: string;
+  condition?: string;
 }

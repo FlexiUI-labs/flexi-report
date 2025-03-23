@@ -530,6 +530,18 @@ export class FlexiReportComponent implements OnChanges {
       els.forEach((el: HTMLElement) => {
         const calculation = el.getAttribute("data-calculation");
         const property = el.getAttribute("data-property") || "";
+        const format = el.getAttribute("data-format") || "";
+        const condition = el.getAttribute("data-condition") || "";
+
+        if(condition){
+          const parentElement = el.parentElement as HTMLElement;
+          if(condition === "Sıfırdan büyük"){
+            const val = this.getNestedValue(this.singleData(), property, "");
+            if(val <= 0){
+              parentElement.style.display = "none";
+            }
+          }
+        }
 
         let value: any = "";
 
@@ -538,6 +550,9 @@ export class FlexiReportComponent implements OnChanges {
           value = this.formatValue(value, "n");
         } else if (property) {
           value = this.getNestedValue(this.singleData(), property, "");
+          if(format){
+            value = this.formatValue(value, format);
+          }
           //if (!isNaN(value)) value = Number(value).toLocaleString();
         }
 
@@ -716,6 +731,12 @@ export class FlexiReportComponent implements OnChanges {
     els.forEach((el: HTMLElement) => {
       const value = el.getAttribute("data-value") || "No value";
       el.innerText = value
+    });
+
+    let singleTables = this.pdfArea().nativeElement.querySelectorAll("table[data-name='single_table']");
+    singleTables.forEach((table: HTMLElement) => {
+      const hiddenTrs = table.querySelectorAll("tr[style*='display: none']") as NodeListOf<HTMLElement>;
+      hiddenTrs.forEach(tr => tr.style.display="table-row");
     });
 
     let tables = this.pdfArea().nativeElement.querySelectorAll('table[data-name="table"]');
@@ -905,7 +926,9 @@ export class FlexiReportComponent implements OnChanges {
         format: el.getAttribute("data-format") || "",
         calculation: el.getAttribute("data-calculation") || "",
         footerValue: el.getAttribute("data-footer") || "",
-        el: el
+        el: el,
+        fontWeight: el.style.fontWeight || "normal",
+        condition: el.getAttribute("data-condition") || ""
       });
     });
 
@@ -985,10 +1008,25 @@ export class FlexiReportComponent implements OnChanges {
   }
 
   updateTableForSingleTable(data:TableSettingModel){
-    data.el!.innerText = data.value;
+    let value = data.value;
+    if(data.format){
+      data.el!.setAttribute("data-format",data.format);
+    }else{
+      data.el!.removeAttribute("data-format");
+    }
+    if(data.condition){
+      data.el!.setAttribute("data-condition",data.condition);
+    }else{
+      data.el!.removeAttribute("data-condition");
+    }
+    data.el!.innerText = value;
+    data.el!.style.textAlign = data.textAlign || "start";
+    data.el!.style.fontWeight = data.fontWeight || "normal";
     data.el!.setAttribute("data-value",data.value!);
     if(data.property){
       data.el!.setAttribute("data-property",data.property!);
+    }else{
+      data.el!.removeAttribute("data-property");
     }
   }
 
