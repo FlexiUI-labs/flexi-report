@@ -915,13 +915,14 @@ export class FlexiReportComponent implements OnChanges {
   deleteTableHead(index: number) {
     if(this.style.elementName() === "table"){
       this.tableHeads().splice(index, 1);
-      const tbodyTrs = this.pdfArea().nativeElement.querySelectorAll("tbody tr");
-      tbodyTrs.forEach((tr:HTMLElement) => {
+      const table = this.style.selectedElement() as HTMLTableElement;
+      const tbodyTrs = table.querySelectorAll("tbody tr");
+      tbodyTrs.forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         tds[index].remove();
       });
 
-      const tfootTr = this.pdfArea().nativeElement.querySelector("tfoot tr");
+      const tfootTr = table.querySelector("tfoot tr");
       if(tfootTr){
         const ths = tfootTr.querySelectorAll("th");
         ths[index].remove();
@@ -949,18 +950,11 @@ export class FlexiReportComponent implements OnChanges {
 
   updateTableHeads() {
     if (!this.style.selectedElement() || this.style.selectedElement()?.tagName !== "TABLE") return;
-
     const table = this.style.selectedElement() as HTMLTableElement;
-    let headerRow: any = table.querySelector("tr");
 
-    if (!headerRow) {
-      headerRow = this.#renderer.createElement("tr");
-      this.#renderer.appendChild(table, headerRow);
-    }
-
-    while (headerRow.firstChild) {
-      this.#renderer.removeChild(headerRow, headerRow.firstChild);
-    }
+    const theadTR = table.querySelector("thead tr");
+    const ths = theadTR?.querySelectorAll("th");
+    ths?.forEach(th => th.remove());
 
     this.tableHeads().forEach(head => {
       const th = this.#renderer.createElement("th");
@@ -984,7 +978,7 @@ export class FlexiReportComponent implements OnChanges {
       if (head.calculation){
         this.#renderer.setAttribute(th, "data-calculation", head.calculation);
       }
-      this.#renderer.appendChild(headerRow, th);
+      this.#renderer.appendChild(theadTR, th);
     });
 
     this.#renderer.setAttribute(table, "data-bind", "true");
