@@ -453,6 +453,7 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().trBorderColor || 'black');
     this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
     this.#renderer.setStyle(th, "vertical-align", "top");
+    this.#renderer.setStyle(th, "text-align", "start");
     this.#renderer.setStyle(th, 'padding', '5px');
     this.#renderer.appendChild(tr, th);
 
@@ -463,6 +464,7 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setStyle(td, 'border-color', this.style.elementStyle().trBorderColor || 'black');
     this.#renderer.setStyle(td, 'font-size', this.style.elementStyle().tdFontSize || '10px');
     this.#renderer.setStyle(td, "vertical-align", "top");
+    this.#renderer.setStyle(td, "text-align", "start");
     this.#renderer.setStyle(td, 'padding', '5px');
     this.#renderer.appendChild(tr, td);
 
@@ -1045,6 +1047,7 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setStyle(th, 'border-style', this.style.elementStyle().trBorderStyle || 'solid');
     this.#renderer.setStyle(th, 'border-color', this.style.elementStyle().trBorderColor || 'black');
     this.#renderer.setStyle(th, 'font-size', this.style.elementStyle().thFontSize || '11px');
+    this.#renderer.setStyle(th, "text-align", "start");
     this.#renderer.setStyle(th, "vertical-align", "top");
     this.#renderer.setStyle(th, 'padding', '5px');
     this.#renderer.appendChild(tr, th);
@@ -1057,6 +1060,7 @@ export class FlexiReportComponent implements OnChanges {
     this.#renderer.setStyle(td, 'border-style', this.style.elementStyle().trBorderStyle || 'solid');
     this.#renderer.setStyle(td, 'border-color', this.style.elementStyle().trBorderColor || 'black');
     this.#renderer.setStyle(td, 'font-size', this.style.elementStyle().tdFontSize || '10px');
+    this.#renderer.setStyle(td, "text-align", "start");
     this.#renderer.setStyle(td, "vertical-align", "top");
     this.#renderer.setStyle(td, 'padding', '5px');
     this.#renderer.appendChild(tr, td);
