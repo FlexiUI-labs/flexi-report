@@ -1,6 +1,6 @@
 {
   "name": "flexi-report",
-  "version": "21.0.0",
+  "version": "22.0.0",
   "description": "Flexi Report is a dynamic Angular component for creating, styling, and exporting interactive reports with drag-and-drop support, data binding, and PDF/Excel export capabilities.",
   "author": "Taner Saydam <tanersaydam@gmail.com>",
   "license": "MIT",
@@ -13,11 +13,11 @@
     "filtering"
   ],
   "peerDependencies": {
-    "@angular/common": "^21.0.0",
-    "@angular/core": "^21.0.0",
-    "flexi-button": "^21.0.0",
-    "flexi-grid": "^21.0.0",
-    "flexi-tooltip": "^21.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "flexi-button": "^22.0.0",
+    "flexi-grid": "^22.0.0",
+    "flexi-tooltip": "^22.0.0",
     "jspdf": "^3.0.4",
     "ngx-json-viewer": "^3.2.1",
     "xlsx": "^0.18.5",
